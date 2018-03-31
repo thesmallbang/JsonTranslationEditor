@@ -1,7 +1,9 @@
 
 # Use at your own risk.
 
-## I slapped this together because I didn't want to pay for BabelEdit but wanted some functionality. This is my first time learning WPF so be warned.
+## I slapped this together after using the BabelEdit trial and wanted to keep some basic functionality. This is my first time learning WPF so be warned.
+
+### For a more fully featured program you may want to look into [BabelEdit](https://www.codeandweb.com/babeledit)
 
 
 ### This program has no real error handling or friendly messages but should be work assuming your translation files are not too large until I add some optimizations.
