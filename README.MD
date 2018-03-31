@@ -33,6 +33,6 @@ or
 ## Please note right now it will only save in the last format
 
 
-![alt text](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/ns.png "Main Window")
+![alt text](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/screenshot1.png "Main Window")
 
 ## Hotkeys Rename (F2), Delete (Del), New (CTRL+A)
