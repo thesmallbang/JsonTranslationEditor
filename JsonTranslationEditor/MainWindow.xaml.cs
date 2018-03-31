@@ -73,6 +73,7 @@ namespace JsonTranslationEditor
             itemsControl.ItemsSource = null;
             allSettings = new JsonHelper().Load(path);
             summaryInfo.Update(allSettings);
+            summaryControl.ItemsSource = null;
             summaryControl.ItemsSource = summaryInfo.Details;
             SetupTree();
 
@@ -215,6 +216,10 @@ namespace JsonTranslationEditor
             var txtBox = (TextBox)sender;
             LanguageSetting setting = (LanguageSetting)txtBox.Tag;
             setting.Value = txtBox.Text;
+
+            summaryInfo.Update(allSettings);
+            summaryControl.ItemsSource = null;
+            summaryControl.ItemsSource = summaryInfo.Details;
         }
 
         private void Save(object sender, RoutedEventArgs e)
