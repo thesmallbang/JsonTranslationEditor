@@ -21,12 +21,12 @@ namespace JsonTranslationEditor
     {
 
 
-        public string Message { get; }
 
         public Prompt(string title, string message, string defaultValue = "")
         {
+            InitializeComponent();
             Title = title;
-            Message = message;
+            messageLabel.Text = message;
             InitializeComponent();
             ResponseTextBox.Text = defaultValue;
             ResponseTextBox.Focus();

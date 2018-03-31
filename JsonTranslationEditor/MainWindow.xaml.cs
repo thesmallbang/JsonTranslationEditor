@@ -23,6 +23,7 @@ namespace JsonTranslationEditor
 
         private List<LanguageSetting> allSettings;
         private TreeViewItem selectedNode;
+        private SummaryInfo summaryInfo = new SummaryInfo();
 
         private string startupPath { get; set; }
 
@@ -71,12 +72,15 @@ namespace JsonTranslationEditor
         {
             itemsControl.ItemsSource = null;
             allSettings = new JsonHelper().Load(path);
+            summaryInfo.Update(allSettings);
+            summaryControl.ItemsSource = summaryInfo.Details;
             SetupTree();
 
         }
         private void SetupTree()
         {
-
+            AddMissingLanguages();
+            summaryInfo.Update(allSettings);
             this.TreeNamespace.Items.Clear();
             var root = CreateTreeNodes(allSettings);
             var nodes = new List<TreeViewItem>();
@@ -93,6 +97,7 @@ namespace JsonTranslationEditor
             this.TreeNamespace.SelectedItemChanged += TreeNamespace_SelectedItemChanged;
 
             itemMenu.IsEnabled = false;
+
         }
 
         private void TreeNamespace_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -174,7 +179,18 @@ namespace JsonTranslationEditor
 
         }
 
+        private void AddMissingLanguages()
+        {
+            var namespaces = allSettings.Select(o => o.Namespace).Distinct().ToList();
+            var allLanguages = allSettings.Select(o => o.Language).Distinct().ToList();
 
+            foreach (var language in allLanguages)
+            {
+                var languageNamespaces = allSettings.Where(o => o.Language == language && !string.IsNullOrWhiteSpace(o.Value)).Select(o => o.Namespace).Distinct().ToList();
+                allSettings.AddRange(namespaces.Except(languageNamespaces).Select(o=> new LanguageSetting() {Namespace = o,Value = string.Empty,Language = language }));
+            }
+
+        }
         private string BuildNamespaceFromNode(TreeViewItem node, string built = "")
         {
             if (node == null) return built;
@@ -276,8 +292,7 @@ namespace JsonTranslationEditor
                 MessageBox.Show("Duplicate language");
                 return;
             }
-
-            
+                        
             var toCopy = allSettings.First();
             var newSetting = new LanguageSetting() { Namespace = toCopy.Namespace, Value = "fillmein", Language = dialog.ResponseText };
 

@@ -19,12 +19,6 @@ namespace JsonTranslationEditor
         }
         public void LoadSettings(IEnumerable<LanguageSetting> settings)
         {
-            var missingLanguages = languages.Except(settings.Select(o=>o.Language));
-            foreach(var missingLanguage in missingLanguages)
-            {
-                ((List<LanguageSetting>)settings).Add(new LanguageSetting() { Language = missingLanguage, Namespace = Namespace, Value= "" });
-            }
-
             Translations = settings.OrderBy(o=>o.Language);
         }
     }
