@@ -19,11 +19,15 @@ namespace JsonTranslationEditor
 
             foreach (var filePath in files)
             {
+                var newFiles = new List<LanguageSetting>();
                 var file = System.IO.Path.GetFileName(filePath);
                 var language = file.Replace(".json", "");
 
                 var content = string.Join(Environment.NewLine, System.IO.File.ReadAllLines(filePath));
-                FromNestMethod(settings, language, content);
+                FromNestMethod(newFiles, language, content);
+                if (!newFiles.Any())
+                    newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language} });
+                settings.AddRange(newFiles);
             }
             return settings;
         }
@@ -93,7 +97,7 @@ namespace JsonTranslationEditor
                     var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
                     var contentBuilder = new StringBuilder("{\n");
                     var counter = 0;
-                    foreach (var setting in languageSetting.Value.Where(o=> !string.IsNullOrWhiteSpace(o.Value)).OrderBy(o => o.Namespace))
+                    foreach (var setting in languageSetting.Value.Where(o=> !string.IsNullOrWhiteSpace(o.Value) && !string.IsNullOrEmpty(o.Namespace)).OrderBy(o => o.Namespace))
                     {
                         counter++;
                         contentBuilder.AppendLine((counter == 1 ? "" : ",") + "\t\"" + setting.Namespace + "\" : \"" + setting.Value + "\"");
