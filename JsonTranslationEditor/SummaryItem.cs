@@ -9,10 +9,13 @@ namespace JsonTranslationEditor
     public class SummaryItem
     {
         public string Language { get; set; }
-        public double PercentageMissing { get; set; }
+        public double Percentage { get { return Math.Round((((Potential - Missing) / Potential) * 100), 2); } }
         public double Missing { get; set; }
         public DateTime Updated { get; } = DateTime.Now;
-        public string Stats => Missing > 0 ? $"{Language} : Missing: {Missing} ({PercentageMissing}%)" : $"{Language} : OK!";
+        public double Potential { get; set; }
+
+        public string Stats => Missing > 0 ? $"{Language} : {Percentage}% (missing {Missing} of {Potential})" :  $"{Language} : OK!";
+           
 
      }
 }

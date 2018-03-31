@@ -26,7 +26,7 @@ namespace JsonTranslationEditor
                 var content = string.Join(Environment.NewLine, System.IO.File.ReadAllLines(filePath));
                 FromNestMethod(newFiles, language, content);
                 if (!newFiles.Any())
-                    newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language} });
+                    newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
             return settings;
@@ -80,35 +80,37 @@ namespace JsonTranslationEditor
             return newPath;
         }
 
-        public void SaveSettings(int style, string path, Dictionary<string, IEnumerable<LanguageSetting>> languageSettings)
+        public void SaveSettings(SaveStyles style, string path, Dictionary<string, IEnumerable<LanguageSetting>> languageSettings)
         {
-
-            if (style == 1)
+            switch (style)
             {
-                MessageBox.Show("Unsupported save style. Options > Alt SaveStyle");
-                return;
-
-            }
-
-            if (style == 0)
-            {
-                foreach (var languageSetting in languageSettings)
-                {
-                    var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
-                    var contentBuilder = new StringBuilder("{\n");
-                    var counter = 0;
-                    foreach (var setting in languageSetting.Value.Where(o=> !string.IsNullOrWhiteSpace(o.Value) && !string.IsNullOrEmpty(o.Namespace)).OrderBy(o => o.Namespace))
+                case SaveStyles.Json:
                     {
-                        counter++;
-                        contentBuilder.AppendLine((counter == 1 ? "" : ",") + "\t\"" + setting.Namespace + "\" : \"" + setting.Value + "\"");
-                    }
+                        foreach (var languageSetting in languageSettings)
+                        {
+                            var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
+                            var contentBuilder = new StringBuilder("{\n");
+                            var counter = 0;
+                            foreach (var setting in languageSetting.Value.NoEmpty().OrderBy(o => o.Namespace))
+                            {
+                                counter++;
+                                contentBuilder.AppendLine((counter == 1 ? "" : ",") + "\t\"" + setting.Namespace + "\" : \"" + setting.Value + "\"");
+                            }
 
-                    contentBuilder.AppendLine("}");
-                    System.IO.File.WriteAllText(newFilePath, contentBuilder.ToString());
-                }
+                            contentBuilder.AppendLine("}");
+                            System.IO.File.WriteAllText(newFilePath, contentBuilder.ToString());
+                        }
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("Save Style");
             }
         }
 
-
+        public enum SaveStyles
+        {
+            Json,
+            Namespaced,
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace JsonTranslationEditor
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
+            this.TreeNamespace.SelectedItemChanged += TreeNamespace_SelectedItemChanged;
 
             if (!string.IsNullOrWhiteSpace(startupPath))
             {
@@ -72,33 +72,32 @@ namespace JsonTranslationEditor
         {
             itemsControl.ItemsSource = null;
             allSettings = new JsonHelper().Load(path);
-            summaryInfo.Update(allSettings);
-            summaryControl.ItemsSource = null;
-            summaryControl.ItemsSource = summaryInfo.Details;
             AddMissingTranslations();
-            SetupTree();
+            RefreshTree();
+            UpdateSummaryInfo();
 
         }
-        private void SetupTree()
+        private void RefreshTree(string selectNamespace = "")
         {
-            summaryInfo.Update(allSettings);
-            this.TreeNamespace.Items.Clear();
-            var root = CreateTreeNodes(ValidSettings().ToList());
-            var nodes = new List<TreeViewItem>();
-            foreach (TreeViewItem node in root.Items)
-            {
-                nodes.Add(node);
-            }
-            root.Items.Clear();
-
+            TreeNamespace.Items.Clear();
+            var nodes = allSettings.ForParse().ToTreeItems();
             foreach (var node in nodes)
             {
                 this.TreeNamespace.Items.Add(node);
             }
-            this.TreeNamespace.SelectedItemChanged += TreeNamespace_SelectedItemChanged;
-
             itemMenu.IsEnabled = false;
 
+            if (!string.IsNullOrEmpty(selectNamespace))
+            {
+               TreeNamespace.Items.SelectByNamespace(selectNamespace);
+            }
+        }
+
+        private void UpdateSummaryInfo()
+        {
+            summaryInfo.Update(allSettings);
+            summaryControl.ItemsSource = null;
+            summaryControl.ItemsSource = summaryInfo.Details;
         }
 
         private void TreeNamespace_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -106,37 +105,31 @@ namespace JsonTranslationEditor
             selectedNode = (TreeViewItem)e.NewValue;
             if (selectedNode == null)
             {
-                //disable item menu
                 itemMenu.IsEnabled = false;
                 return;
             }
 
             selectedNode.IsExpanded = true;
-
             itemMenu.IsEnabled = true;
-            //enable item menu
-
-            var clickedNamespace = BuildNamespaceFromNode(selectedNode);
-            if (string.IsNullOrWhiteSpace(clickedNamespace) && selectedNode != null)
-            {
-                itemsControl.ItemsSource = null;
-                //change to send all
-                return;
-            }
+            
+            var clickedNamespace = selectedNode.ToNamespaceString();
+                        
             if (string.IsNullOrWhiteSpace(clickedNamespace))
             {
                 itemsControl.ItemsSource = null;
                 return;
             }
 
-            var matchedSettings = ValidSettings().Where(o => o.Namespace.StartsWith(clickedNamespace));
+            var matchedSettings = allSettings.ForParse().Where(o => o.Namespace.StartsWith(clickedNamespace));
 
-            var namespaces = matchedSettings.Select(o => o.Namespace).Distinct().ToList();
+            var namespaces = matchedSettings.ToNamespaces();
+            var languages = allSettings.ToLanguages();
+
             var languageGroups = new List<LanguageGroup>();
             foreach (string ns in namespaces)
             {
-                var languageGroup = new LanguageGroup(ns,ValidSettings().Select(o=>o.Language).ToArray());
-                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == ns).ToList());
+                var languageGroup = new LanguageGroup(ns, languages);
+                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == ns));
                 languageGroups.Add(languageGroup);
             }
 
@@ -144,55 +137,15 @@ namespace JsonTranslationEditor
 
         }
 
-        private TreeViewItem CreateTreeNodes(List<LanguageSetting> all)
-        {
-            var namespaces = all.Select(o => o.Namespace.Split('.')[0]).Distinct().OrderBy(o => o).ToList();
-            var root = new TreeViewItem() { Header = "root", Tag = "Assets/Images/ns.png" };
 
-
-            foreach (var ns in namespaces)
-            {
-                ProcessNs(root, ns, all);
-            }
-
-            return root;
-        }
-
-        private IEnumerable<LanguageSetting> ValidSettings()
-        {
-            return allSettings.Where(o=> !string.IsNullOrWhiteSpace(o.Namespace));
-        }
-
-        private void ProcessNs(TreeViewItem node, string ns, List<LanguageSetting> allSettings)
-        {
-            var thisNode = new TreeViewItem() { Header = (ns.Split('.').Last()), Tag = node.Tag };
-
-            if (node == null)
-                node = thisNode;
-            else
-                node.Items.Add(thisNode);
-
-            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
-
-            if (!namespaces.Any())
-            {
-                thisNode.Tag = "Assets/Images/translation.png";
-            }
-
-            foreach (var nextNs in namespaces)
-            {
-                ProcessNs(thisNode, ns + "." + nextNs, allSettings);
-            }
-
-        }
         private void AddMissingTranslations()
         {
-            var namespaces = allSettings.Select(o => o.Namespace).Distinct().ToList();
-            var allLanguages = allSettings.Select(o => o.Language).Distinct().ToList();
+            var namespaces = allSettings.ToNamespaces().ToList();
+            var allLanguages = allSettings.ToLanguages().ToList();
 
             foreach (var language in allLanguages)
             {
-                var languageNamespaces = allSettings.Where(o => o.Language == language).Select(o => o.Namespace).Distinct().ToList();
+                var languageNamespaces = allSettings.OnlyLanguage(language).ToNamespaces();
                 allSettings.AddRange(namespaces.Except(languageNamespaces).Select(o => new LanguageSetting() { Namespace = o, Value = string.Empty, Language = language }));
             }
 
@@ -200,97 +153,56 @@ namespace JsonTranslationEditor
 
 
 
-        private string BuildNamespaceFromNode(TreeViewItem node, string built = "")
-        {
-            if (node == null) return built;
 
-            if (node.Parent == null && string.IsNullOrEmpty(built))
-                return node.Header.ToString();
-
-
-            if (node.Parent is TreeViewItem)
-            {
-                return BuildNamespaceFromNode((TreeViewItem)node.Parent, built = string.IsNullOrEmpty(built) ? node.Header.ToString() : node.Header.ToString() + "." + built);
-            }
-            else
-            {
-                return node.Header + "." + built;
-            }
-
-        }
-
-        private void TextBox_KeyUp(object sender, KeyEventArgs e)
+        private void LanguageValue_KeyUp(object sender, KeyEventArgs e)
         {
             var txtBox = (TextBox)sender;
             LanguageSetting setting = (LanguageSetting)txtBox.Tag;
             setting.Value = txtBox.Text;
-
-            summaryInfo.Update(allSettings);
-            summaryControl.ItemsSource = null;
-            summaryControl.ItemsSource = summaryInfo.Details;
+            UpdateSummaryInfo();
         }
 
         private void Save(object sender, RoutedEventArgs e)
         {
-            var seperatedByLanguage = ValidSettings().GroupBy(o => o.Language).Select(o => new { Language = o.Key, Settings = o.Select(p => p) });
-            var dictionary = new Dictionary<string, IEnumerable<LanguageSetting>>();
-
-            foreach (var matches in seperatedByLanguage)
-            {
-                dictionary.Add(matches.Language, matches.Settings);
-            }
-
-            new JsonHelper().SaveSettings(0, startupPath, dictionary);
-            Console.WriteLine("Saved");
+            new JsonHelper().SaveSettings(0, startupPath, allSettings.ToLanguageDictionary());
         }
 
         private void Refresh(object sender, RoutedEventArgs e)
         {
             LoadFolder(startupPath);
-
-            summaryInfo.Update(allSettings);
-            summaryControl.ItemsSource = null;
-            summaryControl.ItemsSource = summaryInfo.Details;
-            Console.WriteLine("Refreshed");
-
         }
-
         private void NewItem(object sender, RoutedEventArgs e)
         {
             TreeViewItem node = (TreeViewItem)TreeNamespace.SelectedItem;
 
 
-            var ns = BuildNamespaceFromNode(node);
+            var ns = node.ToNamespaceString();
 
-            var dialog = new Prompt("New Translation","Enter the translation name below.", ns);
+            var dialog = new Prompt("New Translation", "Enter the translation name below.", ns);
             if (dialog.ShowDialog() != true)
                 return;
 
             if (string.IsNullOrWhiteSpace(dialog.ResponseText))
                 return;
 
-            if (allSettings.Any(setting => setting.Namespace.Contains(dialog.ResponseText)))
+            if (allSettings.NoEmpty().Any(setting => setting.Namespace.Contains(dialog.ResponseText)))
             {
                 MessageBox.Show("Duplicate name");
                 return;
             }
 
-            var languages = allSettings.Select(o => o.Language).Distinct().ToList();
+            var languages = allSettings.ToLanguages().ToList();
             foreach (var language in languages)
             {
                 var val = string.Empty;
                 allSettings.Add(new LanguageSetting() { Namespace = dialog.ResponseText, Value = val, Language = language });
             }
-
-            itemsControl.ItemsSource = null;
-            SetupTree();
-            
+            RefreshTree(dialog.ResponseText);
+            UpdateSummaryInfo();
         }
-
-
         private void NewLanguage(object sender, RoutedEventArgs e)
         {
-            
+
             var dialog = new Prompt("New Language", "Enter the translation language name below.");
             if (dialog.ShowDialog() != true)
                 return;
@@ -303,14 +215,13 @@ namespace JsonTranslationEditor
                 MessageBox.Show("Duplicate language");
                 return;
             }
-                        
+
             var newSetting = new LanguageSetting() { Namespace = "", Value = "", Language = dialog.ResponseText };
 
             allSettings.Add(newSetting);
-            SetupTree();
-            summaryInfo.Update(allSettings);
-            summaryControl.ItemsSource = null;
-            summaryControl.ItemsSource = summaryInfo.Details;
+            itemsControl.ItemsSource = null;
+            UpdateSummaryInfo();
+            RefreshTree();
         }
         private void RenameItem(object sender, RoutedEventArgs e)
         {
@@ -319,7 +230,7 @@ namespace JsonTranslationEditor
             if (node == null)
                 return;
 
-            var ns = BuildNamespaceFromNode(node);
+            var ns = node.ToNamespaceString();
             var originalName = node.Header.ToString();
 
             var dialog = new Prompt("Rename: " + originalName, "Enter the new name below.", originalName);
@@ -342,15 +253,13 @@ namespace JsonTranslationEditor
             var newNs = ns.Substring(0, ns.LastIndexOf(node.Header.ToString())) + dialog.ResponseText.Trim();
 
 
-            ValidSettings().ToList().ForEach((item) =>
+            allSettings.ForParse().ToList().ForEach((item) =>
             {
                 if (item.Namespace.StartsWith(ns))
                     item.Namespace = item.Namespace.Replace(ns, newNs);
             });
 
-            SetupTree();
-
-
+            RefreshTree(newNs);
         }
         private void DeleteItem(object sender, RoutedEventArgs e)
         {
@@ -359,23 +268,25 @@ namespace JsonTranslationEditor
             if (node == null)
                 return;
 
-            var ns = BuildNamespaceFromNode(node);
+            var ns = node.ToNamespaceString();
+
             if (string.IsNullOrWhiteSpace(ns))
                 return;
 
-            if (node.Parent is TreeViewItem)
-            {
-                ((TreeViewItem)node.Parent).Items.Remove(node);
-            }
-            else
+            if (!(node.Parent is TreeViewItem))
             {
                 TreeNamespace.Items.Remove(node);
-
+            } else
+            {
+                var parent = ((TreeViewItem)node.Parent);
+                parent.Items.Remove(node);
+                parent.IsSelected = true;
             }
-            TreeNamespace.UpdateLayout();
-            allSettings.RemoveAll(o => o.Namespace.StartsWith(ns));
 
+            allSettings.NoEmpty().ToList().RemoveAll(o => o.Namespace.StartsWith(ns));
         }
+
+
 
     }
 }

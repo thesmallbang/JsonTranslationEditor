@@ -10,9 +10,9 @@ namespace JsonTranslationEditor
     {
         public string Namespace { get; private set; }
         public IEnumerable<LanguageSetting> Translations { get; private set; }
-        private string[] languages { get; set; }
+        private IEnumerable<string> languages { get; set; }
 
-        public LanguageGroup(string ns, string[] languages)
+        public LanguageGroup(string ns, IEnumerable<string> languages)
         {
             Namespace = ns;
             this.languages = languages;
