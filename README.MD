@@ -1,9 +1,10 @@
 
 # Use at your own risk.
 
-## Slapped this together because I didn't want to pay for BabelEdit but wanted some functionality.
+## I slapped this together because I didn't want to pay for BabelEdit but wanted some functionality. I Have not used WPF before but it was much faster than win forms
 
-### This program has no real error handling or messages but it will work
+
+### This program has no real error handling or messages but has worked for me.
 
 ### Have not added a select folder dialog yet so it has to be opened with an argument for your path
 
@@ -30,3 +31,8 @@ or
 ```
 
 ## Please note right now it will only save in the last format
+
+
+![alt text](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/ns.png "Main Window")
+
+## Hotkeys Rename (F2), Delete (Del), New (CTRL+A)
