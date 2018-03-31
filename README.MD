@@ -1,12 +1,10 @@
 
 # Use at your own risk.
 
-## I slapped this together because I didn't want to pay for BabelEdit but wanted some functionality. I Have not used WPF before but it was much faster than win forms
+## I slapped this together because I didn't want to pay for BabelEdit but wanted some functionality. This is my first time learning WPF so be warned.
 
 
-### This program has no real error handling or messages but has worked for me.
-
-### Have not added a select folder dialog yet so it has to be opened with an argument for your path
+### This program has no real error handling or friendly messages but should be work assuming your translation files are not too large until I add some optimizations.
 
 ### It can read two formats
 ```json
@@ -36,6 +34,13 @@ or
 ![alt text](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/screenshot1.png "Main Window")
 
 ## Hotkeys
-#### Save (CTRL+S), Reload/Discard Changes (CTRL+R), New Language (CTRL+T)
-#### (Selected Item) Rename (F2), Delete (Del), New Translation (CTRL+A)
+```
+ Open Folder (CTRL+O)
+ Save (CTRL+S)
+ Reload/Discard Changes (CTRL+R)
+ Add Language (CTRL+L)
+ Rename (F2)
+ Delete (Del)
+ Add Translation (CTRL+A)
+
 

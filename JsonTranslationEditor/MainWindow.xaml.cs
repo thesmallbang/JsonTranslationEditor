@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ookii.Dialogs.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,12 +26,12 @@ namespace JsonTranslationEditor
         private TreeViewItem selectedNode;
         private SummaryInfo summaryInfo = new SummaryInfo();
 
-        private string startupPath { get; set; }
+        private string currentPath { get; set; }
 
         public MainWindow(string startupPath)
         {
             InitializeComponent();
-            this.startupPath = startupPath;
+            this.currentPath = startupPath;
 
             RoutedCommand saveCommand = new RoutedCommand();
             saveCommand.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
@@ -54,17 +55,22 @@ namespace JsonTranslationEditor
             CommandBindings.Add(new CommandBinding(newCommand, NewItem));
 
             RoutedCommand newLanguageCommand = new RoutedCommand();
-            newLanguageCommand.InputGestures.Add(new KeyGesture(Key.T, ModifierKeys.Control));
+            newLanguageCommand.InputGestures.Add(new KeyGesture(Key.L, ModifierKeys.Control));
             CommandBindings.Add(new CommandBinding(newLanguageCommand, NewLanguage));
+
+            RoutedCommand openFolderCommand = new RoutedCommand();
+            openFolderCommand.InputGestures.Add(new KeyGesture(Key.O, ModifierKeys.Control));
+            CommandBindings.Add(new CommandBinding(openFolderCommand, OpenFolder));
+
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.TreeNamespace.SelectedItemChanged += TreeNamespace_SelectedItemChanged;
 
-            if (!string.IsNullOrWhiteSpace(startupPath))
+            if (!string.IsNullOrWhiteSpace(currentPath))
             {
-                LoadFolder(startupPath);
+                LoadFolder(currentPath);
             }
         }
 
@@ -164,12 +170,12 @@ namespace JsonTranslationEditor
 
         private void Save(object sender, RoutedEventArgs e)
         {
-            new JsonHelper().SaveSettings(0, startupPath, allSettings.ToLanguageDictionary());
+            new JsonHelper().SaveSettings(0, currentPath, allSettings.ToLanguageDictionary());
         }
 
         private void Refresh(object sender, RoutedEventArgs e)
         {
-            LoadFolder(startupPath);
+            LoadFolder(currentPath);
         }
         private void NewItem(object sender, RoutedEventArgs e)
         {
@@ -285,7 +291,18 @@ namespace JsonTranslationEditor
 
             allSettings.NoEmpty().ToList().RemoveAll(o => o.Namespace.StartsWith(ns));
         }
+        private void OpenFolder(object sender, RoutedEventArgs e)
+        {
 
+            var dialog = new VistaFolderBrowserDialog();
+            dialog.SelectedPath = currentPath;
+            var selected = dialog.ShowDialog(this);
+            if (selected.GetValueOrDefault())
+            {
+                currentPath = dialog.SelectedPath;
+                LoadFolder(currentPath);
+            }
+        }
 
 
     }
