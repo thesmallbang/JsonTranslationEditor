@@ -51,6 +51,10 @@ namespace JsonTranslationEditor
             RoutedCommand newCommand = new RoutedCommand();
             newCommand.InputGestures.Add(new KeyGesture(Key.A, ModifierKeys.Control));
             CommandBindings.Add(new CommandBinding(newCommand, NewItem));
+
+            RoutedCommand newLanguageCommand = new RoutedCommand();
+            newLanguageCommand.InputGestures.Add(new KeyGesture(Key.T, ModifierKeys.Control));
+            CommandBindings.Add(new CommandBinding(newLanguageCommand, NewLanguage));
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -125,8 +129,8 @@ namespace JsonTranslationEditor
             var languageGroups = new List<LanguageGroup>();
             foreach (string ns in namespaces)
             {
-                var languageGroup = new LanguageGroup(ns);
-                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == ns));
+                var languageGroup = new LanguageGroup(ns,allSettings.Select(o=>o.Language).ToArray());
+                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == ns).ToList());
                 languageGroups.Add(languageGroup);
             }
 
@@ -221,7 +225,66 @@ namespace JsonTranslationEditor
 
         private void NewItem(object sender, RoutedEventArgs e)
         {
+            TreeViewItem node = (TreeViewItem)TreeNamespace.SelectedItem;
 
+
+            var ns = BuildNamespaceFromNode(node);
+
+            var dialog = new Prompt("New Translation","Enter the translation name below.", ns);
+            if (dialog.ShowDialog() != true)
+                return;
+
+            if (string.IsNullOrWhiteSpace(dialog.ResponseText))
+                return;
+
+            if (allSettings.Any(setting => setting.Namespace.Contains(dialog.ResponseText)))
+            {
+                MessageBox.Show("Duplicate name");
+                return;
+            }
+
+            var languages = allSettings.Select(o => o.Language).Distinct().ToList();
+            var counter = 0;
+            foreach (var language in languages)
+            {
+                var val = string.Empty;
+                counter++;
+                if (counter == 1)
+                    val = "missingtranslation_"+dialog.ResponseText;
+
+                allSettings.Add(new LanguageSetting() { Namespace = dialog.ResponseText, Value = val, Language = language });
+            }
+
+            itemsControl.ItemsSource = null;
+            SetupTree();
+            
+        }
+
+
+        private void NewLanguage(object sender, RoutedEventArgs e)
+        {
+            
+            var dialog = new Prompt("New Language", "Enter the translation language name below.");
+            if (dialog.ShowDialog() != true)
+                return;
+
+            if (string.IsNullOrWhiteSpace(dialog.ResponseText))
+                return;
+
+            if (allSettings.Any(setting => setting.Language == dialog.ResponseText))
+            {
+                MessageBox.Show("Duplicate language");
+                return;
+            }
+
+            
+            var toCopy = allSettings.First();
+            var newSetting = new LanguageSetting() { Namespace = toCopy.Namespace, Value = "fillmein", Language = dialog.ResponseText };
+
+            allSettings.Add(newSetting);
+
+            itemsControl.ItemsSource = null;
+            SetupTree();
         }
         private void RenameItem(object sender, RoutedEventArgs e)
         {
@@ -247,6 +310,7 @@ namespace JsonTranslationEditor
             if (!(node.Parent is TreeViewItem))
             {
                 dialog.ResponseText += ".";
+
             }
 
             var newNs = ns.Substring(0, ns.LastIndexOf(node.Header.ToString())) + dialog.ResponseText.Trim();

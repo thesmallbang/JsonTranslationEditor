@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Height="170" Width="400">
     <StackPanel>
-        <TextBlock Text="{Binding Message}" Height="90" />
+        <TextBlock Text="{Binding Message}" Height="90" Foreground="#FFD46B6B" />
         <TextBox x:Name="ResponseTextBox" />
         <Button Content="OK" Click="OKButton_Click" />
     </StackPanel>

@@ -93,7 +93,7 @@ namespace JsonTranslationEditor
                     var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
                     var contentBuilder = new StringBuilder("{\n");
                     var counter = 0;
-                    foreach (var setting in languageSetting.Value.OrderBy(o => o.Namespace))
+                    foreach (var setting in languageSetting.Value.Where(o=> !string.IsNullOrWhiteSpace(o.Value)).OrderBy(o => o.Namespace))
                     {
                         counter++;
                         contentBuilder.AppendLine((counter == 1 ? "" : ",") + "\t\"" + setting.Namespace + "\" : \"" + setting.Value + "\"");

@@ -35,4 +35,7 @@ or
 
 ![alt text](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/screenshot1.png "Main Window")
 
-## Hotkeys Rename (F2), Delete (Del), New (CTRL+A)
+## Hotkeys
+#### Save (CTRL+S), Reload/Discard Changes (CTRL+R), New Language (CTRL+T)
+#### (Selected Item) Rename (F2), Delete (Del), New Translation (CTRL+A)
+
