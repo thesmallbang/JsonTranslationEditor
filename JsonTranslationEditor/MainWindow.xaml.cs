@@ -75,12 +75,12 @@ namespace JsonTranslationEditor
             summaryInfo.Update(allSettings);
             summaryControl.ItemsSource = null;
             summaryControl.ItemsSource = summaryInfo.Details;
+            AddMissingLanguages();
             SetupTree();
 
         }
         private void SetupTree()
         {
-            AddMissingLanguages();
             summaryInfo.Update(allSettings);
             this.TreeNamespace.Items.Clear();
             var root = CreateTreeNodes(allSettings);
@@ -187,7 +187,7 @@ namespace JsonTranslationEditor
 
             foreach (var language in allLanguages)
             {
-                var languageNamespaces = allSettings.Where(o => o.Language == language && !string.IsNullOrWhiteSpace(o.Value)).Select(o => o.Namespace).Distinct().ToList();
+                var languageNamespaces = allSettings.Where(o => o.Language == language).Select(o => o.Namespace).Distinct().ToList();
                 allSettings.AddRange(namespaces.Except(languageNamespaces).Select(o=> new LanguageSetting() {Namespace = o,Value = string.Empty,Language = language }));
             }
 
@@ -304,6 +304,7 @@ namespace JsonTranslationEditor
             allSettings.Add(newSetting);
 
             itemsControl.ItemsSource = null;
+            AddMissingLanguages();
             SetupTree();
         }
         private void RenameItem(object sender, RoutedEventArgs e)
