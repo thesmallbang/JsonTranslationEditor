@@ -44,5 +44,6 @@ or
  Rename (F2)
  Delete (Del)
  Add Translation (CTRL+A)
-
+ Page Forward (ALT+Right)
+ Page Back (Alt+Left)
 
