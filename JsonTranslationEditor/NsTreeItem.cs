@@ -76,8 +76,7 @@ namespace JsonTranslationEditor
 
             
 
-            if (Parent != null)
-                result += new string('\t',tabindex); //tab if it has a parent
+            result += new string('\t',tabindex); //tab if it has a parent
 
             result += $"\"{Name}\": "; //write out property name in all scenarios
 
