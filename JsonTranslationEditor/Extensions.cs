@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,11 +29,11 @@ namespace JsonTranslationEditor
 
         public static IEnumerable<string> ToNamespaces(this IEnumerable<LanguageSetting> settings)
         {
-            return settings.ForParse().Select(o=>o.Namespace).Distinct();
+            return settings.ForParse().Select(o => o.Namespace).Distinct();
         }
         public static IEnumerable<string> ToNamespaces(this IEnumerable<LanguageSetting> settings, string language)
         {
-            return settings.NoEmpty().Where(o=>o.Language == language).Select(o => o.Namespace).Distinct();
+            return settings.NoEmpty().Where(o => o.Language == language).Select(o => o.Namespace).Distinct();
         }
 
         public static IEnumerable<string> ToLanguages(this IEnumerable<LanguageSetting> settings)
@@ -40,7 +41,7 @@ namespace JsonTranslationEditor
             return settings.Select(o => o.Language).Distinct();
         }
 
-        public static Dictionary<string,IEnumerable<LanguageSetting>> ToLanguageDictionary(this IEnumerable<LanguageSetting> settings)
+        public static Dictionary<string, IEnumerable<LanguageSetting>> ToLanguageDictionary(this IEnumerable<LanguageSetting> settings)
         {
             var seperatedByLanguage = settings.GroupBy(o => o.Language).Select(o => new { Language = o.Key, Settings = o.Select(p => p) });
             var dictionary = new Dictionary<string, IEnumerable<LanguageSetting>>();
@@ -52,14 +53,36 @@ namespace JsonTranslationEditor
             return dictionary;
         }
 
-        public static IEnumerable<TreeViewItem> ToTreeItems(this IEnumerable<LanguageSetting> all)
+        public static IEnumerable<NsTreeItem> ToNsTree(this IEnumerable<LanguageSetting> settings)
         {
-            var namespaces = all.Select(o => o.Namespace.Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+            var namespaces = settings.Select(o => o.Namespace.Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+            var root = new NsTreeItem() { Name = "root" };
+
+            foreach (var ns in namespaces)
+            {
+                ProcessNs(root, ns, settings.ToList());
+            }
+
+            var nodes = new List<NsTreeItem>();
+            foreach (NsTreeItem node in root.Items)
+            {
+                nodes.Add(node);
+                node.Parent = null;
+            }
+            root.Items.Clear();
+
+
+            return nodes;
+        }
+
+        public static IEnumerable<TreeViewItem> ToTreeView(this IEnumerable<LanguageSetting> settings)
+        {
+            var namespaces = settings.Select(o => o.Namespace.Split('.')[0]).Distinct().OrderBy(o => o).ToList();
             var root = new TreeViewItem() { Header = "root", Tag = "Assets/Images/ns.png" };
 
             foreach (var ns in namespaces)
             {
-                ProcessNs(root, ns, all);
+                ProcessNs(root, ns, settings);
             }
 
             var nodes = new List<TreeViewItem>();
@@ -68,9 +91,58 @@ namespace JsonTranslationEditor
                 nodes.Add(node);
             }
             root.Items.Clear();
-
-
             return nodes;
+        }
+
+        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings)
+        {
+            var thisNode = new NsTreeItem() { Parent = node, Name = (ns.Split('.').Last()), Namespace = ns , ImagePath = "Assets/Images/ns.png" };
+
+            if (node == null)
+                node = thisNode;
+            else
+                node.Items.Add(thisNode);
+
+            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+
+            if (!namespaces.Any())
+            {
+                thisNode.ImagePath = "Assets/Images/translation.png";
+                thisNode.Settings = allSettings.Where(o => o.Namespace == thisNode.Namespace);
+                return;
+            }
+
+            var applicableSettings = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).ToList();
+
+            foreach (var nextNs in namespaces)
+            {
+
+                ProcessNs(thisNode, $"{ns}.{nextNs}", applicableSettings);
+            }
+        }
+
+        private static void ProcessNs(TreeViewItem node, string ns, IEnumerable<LanguageSetting> allSettings)
+        {
+            var thisNode = new TreeViewItem() { Header = (ns.Split('.').Last()), Tag = node.Tag };
+
+            if (node == null)
+                node = thisNode;
+            else
+                node.Items.Add(thisNode);
+
+            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+
+            if (!namespaces.Any())
+            {
+                thisNode.Tag = "Assets/Images/translation.png";
+                return;
+            }
+
+            foreach (var nextNs in namespaces)
+            {
+                ProcessNs(thisNode, ns + "." + nextNs, allSettings);
+            }
+
         }
 
         public static string ToNamespaceString(this TreeViewItem node, string built = "")
@@ -120,7 +192,7 @@ namespace JsonTranslationEditor
 
             if (!node.HasItems)
                 return null;
-            
+
             var parts = remainingNs.Split('.');
             var nsPart = parts[0];
 
@@ -129,7 +201,7 @@ namespace JsonTranslationEditor
 
             node.IsExpanded = true;
 
-            var nsRemaining = remainingNs.Substring(nsPart.Length+1);
+            var nsRemaining = remainingNs.Substring(nsPart.Length + 1);
             foreach (TreeViewItem child in node.Items)
             {
                 var childResult = WalkToNamespace(child, nsRemaining);
@@ -140,29 +212,6 @@ namespace JsonTranslationEditor
             return null;
         }
 
-
-        private static void ProcessNs(TreeViewItem node, string ns, IEnumerable<LanguageSetting> allSettings)
-        {
-            var thisNode = new TreeViewItem() { Header = (ns.Split('.').Last()), Tag = node.Tag };
-
-            if (node == null)
-                node = thisNode;
-            else
-                node.Items.Add(thisNode);
-
-            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
-
-            if (!namespaces.Any())
-            {
-                thisNode.Tag = "Assets/Images/translation.png";
-            }
-
-            foreach (var nextNs in namespaces)
-            {
-                ProcessNs(thisNode, ns + "." + nextNs, allSettings);
-            }
-
-        }
 
     }
 }

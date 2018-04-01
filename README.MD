@@ -8,7 +8,7 @@
 
 ### This program has no real error handling or friendly messages but should be work assuming your translation files are not too large until I add some optimizations.
 
-### It can read two formats
+### It can load/save two formats
 ```json
    {
        "your" : {
@@ -29,8 +29,6 @@ or
        "your.another":"value"
    }
 ```
-
-## Please note right now it will only save in the last format
 
 
 ![alt text](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/screenshot1.png "Main Window")
