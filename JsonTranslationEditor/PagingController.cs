@@ -27,7 +27,7 @@ namespace JsonTranslationEditor
                 if (!HasPages)
                     return "Showing All " + Data.Count();
 
-                return $"Showing Page {Page} of {Pages} {Page * PageSize}-{Clamp((Page * PageSize) + PageSize,Data.Count())} of {Data.Count()}";
+                return $"Showing Page {Page} of {Pages} || {((Page-1) * PageSize)}-{Clamp(((Page-1) * PageSize) + PageSize,Data.Count())} of {Data.Count()}";
             }
         }
 
@@ -80,7 +80,7 @@ namespace JsonTranslationEditor
         public void SwapData(IEnumerable<T> data)
         {
             Data = data;
-            double pages = Data.Count() / PageSize;
+            double pages = (double)Data.Count() / (double)PageSize;
             if (pages > (int)pages)
                 pages++;
 
