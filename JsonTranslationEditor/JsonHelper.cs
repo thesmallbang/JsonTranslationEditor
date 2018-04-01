@@ -31,7 +31,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-            //  GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+          //    GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
