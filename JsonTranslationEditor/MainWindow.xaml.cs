@@ -131,13 +131,16 @@ namespace JsonTranslationEditor
 
             
             var clickedNamespace = selectedNode.ToNamespaceString();
-                        
+            if (selectedNode.HasItems)
+                clickedNamespace += ".";
+            
+            
             if (string.IsNullOrWhiteSpace(clickedNamespace))
             {
                 return;
             }
 
-            SearchFilterTextbox.Text = clickedNamespace;
+            SearchFilterTextbox.Text = clickedNamespace.Replace("..", ".");
         }
 
         private void SearchFilterTextbox_TextChanged(object sender, TextChangedEventArgs e)

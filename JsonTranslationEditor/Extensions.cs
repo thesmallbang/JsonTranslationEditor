@@ -87,7 +87,7 @@ namespace JsonTranslationEditor
             }
             else
             {
-                return node.Header + "." + built;
+                return (node.Header + "." + built);
             }
 
         }
