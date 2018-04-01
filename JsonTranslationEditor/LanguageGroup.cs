@@ -19,7 +19,7 @@ namespace JsonTranslationEditor
         }
         public void LoadSettings(IEnumerable<LanguageSetting> settings)
         {
-            Translations = settings.Distinct().OrderBy(o=>o.Language).ToList();
+            Translations = settings.ForParse().Distinct().OrderBy(o=>o.Language).ToList();
         }
     }
 }

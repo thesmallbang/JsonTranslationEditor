@@ -18,6 +18,8 @@
         <Grid.RowDefinitions>
             <RowDefinition x:Name="menuRow" Height="20"></RowDefinition>
             <RowDefinition x:Name="contentRow" Height="*"></RowDefinition>
+            <RowDefinition x:Name="footerRow" Height="20"></RowDefinition>
+            
         </Grid.RowDefinitions>
         <DockPanel Grid.ColumnSpan="3" Grid.Row="0">
             <Menu DockPanel.Dock="Top" Height="20">
@@ -36,7 +38,7 @@
             </Menu>
             <TextBox AcceptsReturn="True" />
         </DockPanel>
-        <Grid Grid.Column="0" Grid.Row="1">
+        <Grid Grid.Column="0" Grid.Row="1" Grid.RowSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
@@ -69,7 +71,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                    <TextBlock Text="{Binding Stats}"></TextBlock>
+                                <TextBlock Text="{Binding Stats}"></TextBlock>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -77,53 +79,64 @@
             </ScrollViewer>
         </Grid>
 
-
         <GridSplitter Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" Width="5" />
-        <ScrollViewer  Grid.Column="2" Grid.Row="1">
-            <ItemsControl x:Name="itemsControl" Background="#d4d8d9">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <StackPanel.Resources>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Margin" Value="5"></Setter>
-                                    <Style.Resources>
+        <TextBox Grid.Column="2" x:Name="SearchFilterTextbox" />
+        <ScrollViewer  Grid.Column="2" Grid.Row="1" x:Name="ContentScroller">
+            <StackPanel Background="#d4d8d9" x:Name="PagingContainer">
+                <StackPanel.Resources>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Margin" Value="5"></Setter>
+                        <Style.Resources>
 
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="FontWeight" Value="Bold" />
-                                            <Setter Property="Margin" Value="0,0,0,5"/>
-                                        </Style>
-                                        <Style TargetType="Separator">
-                                            <Setter Property="Margin" Value="0,10,0,5"/>
-                                        </Style>
-                                        <Style TargetType="TextBox">
-                                            <Setter Property="Margin" Value="0,0,0,3"/>
-                                        </Style>
-                                    </Style.Resources>
-                                </Style>
-                            </StackPanel.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Bold" />
+                                <Setter Property="Margin" Value="0,0,0,5"/>
+                            </Style>
+                            <Style TargetType="Separator">
+                                <Setter Property="Margin" Value="0,10,0,5"/>
+                            </Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="Margin" Value="0,0,0,3"/>
+                            </Style>
+                        </Style.Resources>
+                    </Style>
+                </StackPanel.Resources>
+                
+                
+                <StackPanel>
+                    <ItemsControl x:Name="languageGroupContainer" ItemsSource="{Binding PageData}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Namespace}"></TextBlock>
+                                    <ItemsControl ItemsSource="{Binding Translations}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition x:Name="languageColumn" Width="75"></ColumnDefinition>
+                                                        <ColumnDefinition x:Name="translationColumn" Width="*"></ColumnDefinition>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0"  Text="{Binding Language}" />
+                                                    <TextBox Grid.Column="1" Text="{Binding Value}" Tag="{Binding}" KeyUp="LanguageValue_KeyUp" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Separator/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
 
-                            <TextBlock Text="{Binding Namespace}"></TextBlock>
-                            <ItemsControl ItemsSource="{Binding Translations}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition x:Name="languageColumn" Width="75"></ColumnDefinition>
-                                                <ColumnDefinition x:Name="translationColumn" Width="*"></ColumnDefinition>
-                                            </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0" Text="{Binding Language}" />
-                                            <TextBox Grid.Column="1" Text="{Binding Value}" Tag="{Binding}" KeyUp="LanguageValue_KeyUp" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Separator/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+
+            </StackPanel>
+            
+            
         </ScrollViewer>
+        <TextBlock Grid.Column="2" Grid.Row="3" x:Name="pagingMessage"></TextBlock>
+
     </Grid>
 </Window>

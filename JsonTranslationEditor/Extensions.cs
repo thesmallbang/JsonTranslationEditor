@@ -121,8 +121,6 @@ namespace JsonTranslationEditor
             if (!node.HasItems)
                 return null;
             
-            TreeViewItem found = null;
-
             var parts = remainingNs.Split('.');
             var nsPart = parts[0];
 
