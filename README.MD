@@ -6,7 +6,7 @@
 ### For a more fully featured program you may want to look into [BabelEdit](https://www.codeandweb.com/babeledit)
 
 
-### This program has no real error handling or friendly messages but should be work assuming your translation files are not too large until I add some optimizations.
+### This program has no real error handling or friendly messages but should work fine assuming your translation files are not too large until I add some optimizations.
 
 ### It can load/save two formats
 ```json
