@@ -1,5 +1,5 @@
 
-# Use at your own risk.
+# Binary for testing available in the releases section
 
 ## I slapped this together after using the BabelEdit trial and wanted to keep some basic functionality. This is my first time learning WPF so be warned.
 
