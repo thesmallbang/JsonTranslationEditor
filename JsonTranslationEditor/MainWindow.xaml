@@ -24,7 +24,7 @@
         <DockPanel Grid.ColumnSpan="3" Grid.Row="0">
             <Menu DockPanel.Dock="Top" Height="20">
                 <MenuItem Header="_File">
-                    <MenuItem Header="_Open" />
+                    <MenuItem Header="_Open" Click="OpenFolder" />
                     <MenuItem Header="_Save" Click="Save" />
                     <Separator />
                     <MenuItem Header="_Exit" />
