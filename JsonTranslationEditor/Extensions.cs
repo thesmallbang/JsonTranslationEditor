@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,6 +74,7 @@ namespace JsonTranslationEditor
             return nodes;
         }
 
+     
         public static string ToNamespaceString(this TreeViewItem node, string built = "")
         {
             if (node == null) return built;

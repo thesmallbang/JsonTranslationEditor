@@ -25,14 +25,25 @@ namespace JsonTranslationEditor
         private List<LanguageSetting> allSettings;
         private TreeViewItem selectedNode;
         private SummaryInfo summaryInfo = new SummaryInfo();
-        private PagingController<LanguageGroup> pagingController = new PagingController<LanguageGroup>(30,new List<LanguageGroup>());
-
+        private PagingController<LanguageGroup> pagingController = new PagingController<LanguageGroup>(30, new List<LanguageGroup>());
+        private AppOptions appOptions;
         private string currentPath { get; set; }
-
         public MainWindow(string startupPath)
         {
             InitializeComponent();
-            this.currentPath = startupPath;
+
+            currentPath = startupPath;
+
+            appOptions = AppOptions.FromDisk();
+
+            if (!string.IsNullOrEmpty(startupPath))
+            {
+                appOptions.DefaultPath = currentPath;
+                appOptions.ToDisk();
+            }
+
+            currentPath = appOptions.DefaultPath;
+
 
             RoutedCommand saveCommand = new RoutedCommand();
             saveCommand.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
@@ -91,7 +102,7 @@ namespace JsonTranslationEditor
             AddMissingTranslations();
             RefreshTree();
             UpdateSummaryInfo();
-            
+
 
         }
 
@@ -107,7 +118,7 @@ namespace JsonTranslationEditor
 
             if (!string.IsNullOrEmpty(selectNamespace))
             {
-               TreeNamespace.Items.SelectByNamespace(selectNamespace);
+                TreeNamespace.Items.SelectByNamespace(selectNamespace);
             }
         }
 
@@ -129,12 +140,12 @@ namespace JsonTranslationEditor
             selectedNode.IsExpanded = true;
             itemMenu.IsEnabled = true;
 
-            
+
             var clickedNamespace = selectedNode.ToNamespaceString();
             if (selectedNode.HasItems)
                 clickedNamespace += ".";
-            
-            
+
+
             if (string.IsNullOrWhiteSpace(clickedNamespace))
             {
                 return;
@@ -150,7 +161,8 @@ namespace JsonTranslationEditor
             if (SearchFilterTextbox.Text.EndsWith("."))
             {
                 matchedSettings = matchedSettings.Where(o => o.Namespace.StartsWith(SearchFilterTextbox.Text)).ToList();
-            } else
+            }
+            else
             {
                 matchedSettings = matchedSettings.Where(o => o.Namespace == SearchFilterTextbox.Text).ToList();
             }
@@ -200,8 +212,22 @@ namespace JsonTranslationEditor
 
         private void Save(object sender, RoutedEventArgs e)
         {
-            new JsonHelper().SaveSettings(0, currentPath, allSettings.ToLanguageDictionary());
+            new JsonHelper().SaveSettings(appOptions.SaveStyle, currentPath, allSettings.ToLanguageDictionary());
         }
+        private void SaveTo(object sender, RoutedEventArgs e)
+        {
+            var dialog = new VistaFolderBrowserDialog();
+            dialog.SelectedPath = currentPath;
+            var selected = dialog.ShowDialog(this);
+            if (selected.GetValueOrDefault())
+            {
+                currentPath = dialog.SelectedPath;
+                Save(null, null);
+            }
+
+
+        }
+
 
         private void Refresh(object sender, RoutedEventArgs e)
         {
@@ -313,7 +339,8 @@ namespace JsonTranslationEditor
             if (!(node.Parent is TreeViewItem))
             {
                 TreeNamespace.Items.Remove(node);
-            } else
+            }
+            else
             {
                 var parent = ((TreeViewItem)node.Parent);
                 parent.Items.Remove(node);
@@ -333,6 +360,17 @@ namespace JsonTranslationEditor
                 currentPath = dialog.SelectedPath;
                 LoadFolder(currentPath);
             }
+        }
+
+        private void ShowPreferences(object sender, RoutedEventArgs e)
+        {
+            var optionsHwnd = new Options(appOptions);
+            var saved = optionsHwnd.ShowDialog();
+            if (saved.GetValueOrDefault())
+            {
+                appOptions = optionsHwnd.Config;
+            }
+
         }
 
         private void NextPage(object sender, RoutedEventArgs e)

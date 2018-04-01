@@ -26,6 +26,7 @@
                 <MenuItem Header="_File">
                     <MenuItem Header="_Open" Click="OpenFolder" />
                     <MenuItem Header="_Save" Click="Save" />
+                    <MenuItem Header="_Save To" Click="SaveTo" />
                     <Separator />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
@@ -34,6 +35,10 @@
                     <MenuItem Header="_Rename" Click="RenameItem" />
                     <Separator />
                     <MenuItem Header="_Delete" Click="DeleteItem" />
+                </MenuItem>
+
+                <MenuItem Header="Preferences" Click="ShowPreferences">
+                   
                 </MenuItem>
             </Menu>
             <TextBox AcceptsReturn="True" />

@@ -2,10 +2,12 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace JsonTranslationEditor
 {
@@ -29,7 +31,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-          //  GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+            //  GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
@@ -53,7 +55,8 @@ namespace JsonTranslationEditor
 
         private void GenerateLargeTestData(List<LanguageSetting> settings, IEnumerable<string> languages)
         {
-            foreach (var language in languages) {
+            foreach (var language in languages)
+            {
                 for (int i = 0; i < 10; i++)
                 {
                     for (int s = 0; s < 200; s++)
@@ -116,15 +119,45 @@ namespace JsonTranslationEditor
                         }
                     }
                     break;
+
+                case SaveStyles.Namespaced:
+                    {
+
+                        foreach (var languageSetting in languageSettings)
+                        {
+                            var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
+                            var contentBuilder = new StringBuilder("{");
+
+                            var settings = languageSetting.Value.NoEmpty().OrderBy(o => o).ToList();
+                            var namespaces = settings.ToNamespaces().ToList();
+
+                            var tree = new TreeViewItem() { Header = "root"};
+                            var nodes = settings.ToTreeItems();
+                            foreach (var node in nodes)
+                            {
+                                tree.Items.Add(node);
+                            }
+
+
+                            contentBuilder.AppendLine("}");
+                            System.IO.File.WriteAllText(newFilePath, contentBuilder.ToString());
+                        }
+                    }
+                    break;
+
                 default:
                     throw new NotImplementedException("Save Style");
             }
         }
 
-        public enum SaveStyles
+
+      
+
+           public enum SaveStyles
         {
             Json,
             Namespaced,
         }
     }
+
 }

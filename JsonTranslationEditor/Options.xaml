@@ -1,0 +1,32 @@
+﻿<Window x:Class="JsonTranslationEditor.Options"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JsonTranslationEditor"
+        mc:Ignorable="d"
+        Title="Options" Height="130" Width="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="ContentColumn" Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer x:Name="ContentScroller">
+            <StackPanel>
+                <TextBlock>Save Style</TextBlock>
+                <UniformGrid>
+                    <RadioButton x:Name="JsonRadio" GroupName="SaveStyle">
+                        <TextBlock>Json</TextBlock>
+                    </RadioButton>
+                    <RadioButton x:Name="NamespaceRadio" GroupName="SaveStyle">
+                        <TextBlock>Namespace-Json</TextBlock>
+                    </RadioButton>
+                </UniformGrid>
+                <Separator/>
+                <Button Click="SaveOptions">Save</Button>
+                <Button Click="CloseOptions">Close</Button>
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</Window>
