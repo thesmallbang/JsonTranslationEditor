@@ -128,14 +128,19 @@ namespace JsonTranslationEditor
                             var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
                             var contentBuilder = new StringBuilder("{");
 
-                            var settings = languageSetting.Value.NoEmpty().OrderBy(o => o).ToList();
+                            var settings = languageSetting.Value.NoEmpty().OrderBy(o => o.Namespace).ToList();
                             var namespaces = settings.ToNamespaces().ToList();
 
-                            var tree = new TreeViewItem() { Header = "root"};
-                            var nodes = settings.ToTreeItems();
+                            var nodes = settings.ToNsTree().ToList();
+                            for (int i = 0; i < nodes.Count; i++)
+                            {
+                                contentBuilder.Append(nodes[i].ToJson(languageSetting.Key));
+                                if (i != (nodes.Count - 1))
+                                    contentBuilder.Append(",\n");
+                            }
                             foreach (var node in nodes)
                             {
-                                tree.Items.Add(node);
+                               
                             }
 
 

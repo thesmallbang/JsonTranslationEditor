@@ -13,32 +13,10 @@ namespace JsonTranslationEditor
         public string Name { get; set; }
         public string Namespace { get; set; }
         public string ImagePath { get; set; }
-        public bool IsLoaded { get; set; }
-        public List<LanguageSetting> PendingLoad { get; set; }
 
         public List<NsTreeItem> Items { get; set; } = new List<NsTreeItem>();
 
-        public List<NsTreeItem> LoadedItems
-        {
-            get
-            {
-                if (!IsLoaded)
-                {
-                    if (PendingLoad == null || !PendingLoad.Any())
-                    {
-                        IsLoaded = true;
-                        return Items.ToList();
-                    }
 
-
-                    Extensions.ProcessNs(this, Namespace, PendingLoad.ToList(),1);
-                    IsLoaded = true;
-                }
-
-                return Items.ToList();
-            }
-            
-        }
         public IEnumerable<LanguageSetting> Settings { get; set; }
 
         public bool HasSiblingBefore
@@ -90,6 +68,43 @@ namespace JsonTranslationEditor
 
         public NsTreeItem() { }
 
+        public string ToJson(string language,int  tabindex = 0)
+        {
+            tabindex++;
+            var result = string.Empty;
+            var setting = Settings?.FirstOrDefault(o => o.Language == language);
+
+            
+
+            if (Parent != null)
+                result += new string('\t',tabindex); //tab if it has a parent
+
+            result += $"\"{Name}\": "; //write out property name in all scenarios
+
+            if (!Items.Any())
+            {
+                result += $"\"{setting.Value}\"";
+
+            }
+            else
+            {
+                result += "{\n";
+                foreach (var item in Items)
+                {
+                    result += item.ToJson(language, tabindex) + "\n";
+                }
+
+                result += new string('\t', tabindex) + "}";
+
+           
+
+            }
+            if (HasSiblingAfter)
+                result += ",";
+
+      
+            return result;
+        }
 
         public override string ToString()
         {

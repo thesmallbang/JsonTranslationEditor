@@ -109,7 +109,7 @@ namespace JsonTranslationEditor
         private void RefreshTree(string selectNamespace = "")
         {
             TreeNamespace.Items.Clear();
-            var nodes = allSettings.ForParse().ToTreeItems();
+            var nodes = allSettings.ForParse().ToTreeView();
             foreach (var node in nodes)
             {
                 this.TreeNamespace.Items.Add(node);

@@ -53,14 +53,14 @@ namespace JsonTranslationEditor
             return dictionary;
         }
 
-        public static IEnumerable<NsTreeItem> ToTreeItems(this IEnumerable<LanguageSetting> all)
+        public static IEnumerable<NsTreeItem> ToNsTree(this IEnumerable<LanguageSetting> settings)
         {
-            var namespaces = all.Select(o => o.Namespace.Split('.')[0]).Distinct().OrderBy(o => o).ToList();
-            var root = new NsTreeItem() { Name = "root", ImagePath = "Assets/Images/ns.png" };
+            var namespaces = settings.Select(o => o.Namespace.Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+            var root = new NsTreeItem() { Name = "root" };
 
             foreach (var ns in namespaces)
             {
-                ProcessNs(root, ns, all.ToList(),0);
+                ProcessNs(root, ns, settings.ToList());
             }
 
             var nodes = new List<NsTreeItem>();
@@ -71,10 +71,79 @@ namespace JsonTranslationEditor
             }
             root.Items.Clear();
 
-             
+
             return nodes;
         }
 
+        public static IEnumerable<TreeViewItem> ToTreeView(this IEnumerable<LanguageSetting> settings)
+        {
+            var namespaces = settings.Select(o => o.Namespace.Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+            var root = new TreeViewItem() { Header = "root", Tag = "Assets/Images/ns.png" };
+
+            foreach (var ns in namespaces)
+            {
+                ProcessNs(root, ns, settings);
+            }
+
+            var nodes = new List<TreeViewItem>();
+            foreach (TreeViewItem node in root.Items)
+            {
+                nodes.Add(node);
+            }
+            root.Items.Clear();
+            return nodes;
+        }
+
+        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings)
+        {
+            var thisNode = new NsTreeItem() { Parent = node, Name = (ns.Split('.').Last()), Namespace = ns , ImagePath = "Assets/Images/ns.png" };
+
+            if (node == null)
+                node = thisNode;
+            else
+                node.Items.Add(thisNode);
+
+            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+
+            if (!namespaces.Any())
+            {
+                thisNode.ImagePath = "Assets/Images/translation.png";
+                thisNode.Settings = allSettings.Where(o => o.Namespace == thisNode.Namespace);
+                return;
+            }
+
+            var applicableSettings = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).ToList();
+
+            foreach (var nextNs in namespaces)
+            {
+
+                ProcessNs(thisNode, $"{ns}.{nextNs}", applicableSettings);
+            }
+        }
+
+        private static void ProcessNs(TreeViewItem node, string ns, IEnumerable<LanguageSetting> allSettings)
+        {
+            var thisNode = new TreeViewItem() { Header = (ns.Split('.').Last()), Tag = node.Tag };
+
+            if (node == null)
+                node = thisNode;
+            else
+                node.Items.Add(thisNode);
+
+            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+
+            if (!namespaces.Any())
+            {
+                thisNode.Tag = "Assets/Images/translation.png";
+                return;
+            }
+
+            foreach (var nextNs in namespaces)
+            {
+                ProcessNs(thisNode, ns + "." + nextNs, allSettings);
+            }
+
+        }
 
         public static string ToNamespaceString(this TreeViewItem node, string built = "")
         {
@@ -143,48 +212,6 @@ namespace JsonTranslationEditor
             return null;
         }
 
-
-        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings, int depth)
-        {
-            var maxDepth = 1;
-
-            Console.WriteLine(depth);
-            if (!allSettings.Any())
-                return;
-
-            var thisNode = new NsTreeItem() { Parent = node, Name = (ns.Split('.').Last()), Namespace = ns };
-
-            if (node == null)
-                node = thisNode;
-            else
-                node.Items.Add(thisNode);
-
-
-            var applicableSettings = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).ToList();
-            if (!applicableSettings.Any())
-            {
-                thisNode.ImagePath = "Assets/Images/translation.png";
-                thisNode.Settings = allSettings.Where(o => o.Namespace == thisNode.Namespace);
-                return;
-            }
-
-            if (depth == maxDepth)
-            {
-                thisNode.PendingLoad = applicableSettings;
-                return;
-            }
-            
-            var namespaces = applicableSettings.ToNamespaces();
-
-            depth = depth + 1;
-
-            foreach (var nextNs in namespaces)
-            {
-                ProcessNs(thisNode, nextNs, applicableSettings, depth);
-            }
-            thisNode.IsLoaded = true;
-
-        }
 
     }
 }
