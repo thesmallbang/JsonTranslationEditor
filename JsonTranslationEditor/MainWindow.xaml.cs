@@ -25,6 +25,7 @@ namespace JsonTranslationEditor
         private List<LanguageSetting> allSettings;
         private TreeViewItem selectedNode;
         private SummaryInfo summaryInfo = new SummaryInfo();
+        private PagingController<LanguageGroup> pagingController = new PagingController<LanguageGroup>(30,new List<LanguageGroup>());
 
         private string currentPath { get; set; }
 
@@ -62,27 +63,38 @@ namespace JsonTranslationEditor
             openFolderCommand.InputGestures.Add(new KeyGesture(Key.O, ModifierKeys.Control));
             CommandBindings.Add(new CommandBinding(openFolderCommand, OpenFolder));
 
+            RoutedCommand nextPageCommand = new RoutedCommand();
+            nextPageCommand.InputGestures.Add(new KeyGesture(Key.Right, ModifierKeys.Alt));
+            CommandBindings.Add(new CommandBinding(nextPageCommand, NextPage));
+
+            RoutedCommand previousPageCommand = new RoutedCommand();
+            previousPageCommand.InputGestures.Add(new KeyGesture(Key.Left, ModifierKeys.Alt));
+            CommandBindings.Add(new CommandBinding(previousPageCommand, PreviousPage));
+
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.TreeNamespace.SelectedItemChanged += TreeNamespace_SelectedItemChanged;
-
+            SearchFilterTextbox.TextChanged += SearchFilterTextbox_TextChanged;
             if (!string.IsNullOrWhiteSpace(currentPath))
             {
                 LoadFolder(currentPath);
             }
         }
 
+
+
         private void LoadFolder(string path)
         {
-            itemsControl.ItemsSource = null;
-            allSettings = new JsonHelper().Load(path);
+            allSettings = new JsonHelper().Load(path).ToList();
             AddMissingTranslations();
             RefreshTree();
             UpdateSummaryInfo();
+            
 
         }
+
         private void RefreshTree(string selectNamespace = "")
         {
             TreeNamespace.Items.Clear();
@@ -114,22 +126,34 @@ namespace JsonTranslationEditor
                 itemMenu.IsEnabled = false;
                 return;
             }
-
             selectedNode.IsExpanded = true;
             itemMenu.IsEnabled = true;
+
             
             var clickedNamespace = selectedNode.ToNamespaceString();
                         
             if (string.IsNullOrWhiteSpace(clickedNamespace))
             {
-                itemsControl.ItemsSource = null;
                 return;
             }
 
-            var matchedSettings = allSettings.ForParse().Where(o => o.Namespace.StartsWith(clickedNamespace));
+            SearchFilterTextbox.Text = clickedNamespace;
+        }
 
-            var namespaces = matchedSettings.ToNamespaces();
-            var languages = allSettings.ToLanguages();
+        private void SearchFilterTextbox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+            var matchedSettings = allSettings.ForParse().ToList();
+            if (SearchFilterTextbox.Text.EndsWith("."))
+            {
+                matchedSettings = matchedSettings.Where(o => o.Namespace.StartsWith(SearchFilterTextbox.Text)).ToList();
+            } else
+            {
+                matchedSettings = matchedSettings.Where(o => o.Namespace == SearchFilterTextbox.Text).ToList();
+            }
+
+            var namespaces = matchedSettings.ToNamespaces().ToList();
+            var languages = allSettings.ToLanguages().ToList();
 
             var languageGroups = new List<LanguageGroup>();
             foreach (string ns in namespaces)
@@ -139,10 +163,13 @@ namespace JsonTranslationEditor
                 languageGroups.Add(languageGroup);
             }
 
-            itemsControl.ItemsSource = languageGroups;
+            pagingController.SwapData(languageGroups);
+            languageGroupContainer.ItemsSource = pagingController.PageData;
+            pagingMessage.Text = pagingController.PageMessage;
+            ContentScroller.ScrollToTop();
+
 
         }
-
 
         private void AddMissingTranslations()
         {
@@ -225,9 +252,10 @@ namespace JsonTranslationEditor
             var newSetting = new LanguageSetting() { Namespace = "", Value = "", Language = dialog.ResponseText };
 
             allSettings.Add(newSetting);
-            itemsControl.ItemsSource = null;
+            AddMissingTranslations();
             UpdateSummaryInfo();
             RefreshTree();
+            languageGroupContainer.ItemsSource = null;
         }
         private void RenameItem(object sender, RoutedEventArgs e)
         {
@@ -304,6 +332,27 @@ namespace JsonTranslationEditor
             }
         }
 
+        private void NextPage(object sender, RoutedEventArgs e)
+        {
+            if (pagingController == null || !pagingController.HasNextPage)
+                return;
+            pagingController.NextPage();
+            PagedUpdates();
+        }
+        private void PreviousPage(object sender, RoutedEventArgs e)
+        {
+            if (pagingController == null || !pagingController.HasPreviousPage)
+                return;
+            pagingController.PreviousPage();
+            PagedUpdates();
+        }
+
+        private void PagedUpdates()
+        {
+            languageGroupContainer.ItemsSource = pagingController.PageData;
+            pagingMessage.Text = pagingController.PageMessage;
+            ContentScroller.ScrollToTop();
+        }
 
     }
 }

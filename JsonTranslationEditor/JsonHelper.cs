@@ -29,6 +29,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
+          //  GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
@@ -48,6 +49,19 @@ namespace JsonTranslationEditor
                 MessageBox.Show("Invalid json in " + language);
             }
             settings.AddRange(languageSettings);
+        }
+
+        private void GenerateLargeTestData(List<LanguageSetting> settings, IEnumerable<string> languages)
+        {
+            foreach (var language in languages) {
+                for (int i = 0; i < 10; i++)
+                {
+                    for (int s = 0; s < 200; s++)
+                    {
+                        settings.Add(new LanguageSetting() { Language = language, Namespace = "test." + i + "." + s, Value = "generatedval" });
+                    }
+                }
+            }
         }
 
         private void ProcessSettings(string language, List<LanguageSetting> list, JToken property)
