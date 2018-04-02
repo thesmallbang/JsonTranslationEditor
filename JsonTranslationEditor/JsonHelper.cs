@@ -31,7 +31,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-          //    GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+           // GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
@@ -57,11 +57,15 @@ namespace JsonTranslationEditor
         {
             foreach (var language in languages)
             {
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 2; i++)
                 {
-                    for (int s = 0; s < 200; s++)
+                    for (int n = 0; i < 5; i++)
                     {
-                        settings.Add(new LanguageSetting() { Language = language, Namespace = "test." + i + "." + s, Value = "generatedval" });
+
+                        for (int s = 0; s < 2000; s++)
+                        {
+                            settings.Add(new LanguageSetting() { Language = language, Namespace = $"test.{i}.{n}.{s}", Value = "generatedval" });
+                        }
                     }
                 }
             }
@@ -134,7 +138,7 @@ namespace JsonTranslationEditor
                             var nodes = settings.ToNsTree().ToList();
                             for (int i = 0; i < nodes.Count; i++)
                             {
-                                contentBuilder.Append(nodes[i].ToJson(languageSetting.Key,0));
+                                contentBuilder.Append(nodes[i].ToJson(languageSetting.Key, 0));
                                 if (i != (nodes.Count - 1))
                                     contentBuilder.Append(",\n");
                             }
@@ -151,9 +155,9 @@ namespace JsonTranslationEditor
         }
 
 
-      
 
-           public enum SaveStyles
+
+        public enum SaveStyles
         {
             Json,
             Namespaced,

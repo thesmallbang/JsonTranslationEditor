@@ -43,6 +43,7 @@ namespace JsonTranslationEditor
             }
 
             currentPath = appOptions.DefaultPath;
+            pagingController.UpdatePageSize(appOptions.PageSize);
 
 
             RoutedCommand saveCommand = new RoutedCommand();
@@ -109,7 +110,7 @@ namespace JsonTranslationEditor
         private void RefreshTree(string selectNamespace = "")
         {
             TreeNamespace.Items.Clear();
-            var nodes = allSettings.ForParse().ToTreeView();
+            var nodes = allSettings.ForParse().ToNsTree();
             foreach (var node in nodes)
             {
                 this.TreeNamespace.Items.Add(node);
@@ -358,6 +359,7 @@ namespace JsonTranslationEditor
             if (selected.GetValueOrDefault())
             {
                 currentPath = dialog.SelectedPath;
+                appOptions.DefaultPath = currentPath;
                 LoadFolder(currentPath);
             }
         }
@@ -370,6 +372,7 @@ namespace JsonTranslationEditor
             {
                 appOptions = optionsHwnd.Config;
             }
+            pagingController.UpdatePageSize(appOptions.PageSize);
 
         }
 

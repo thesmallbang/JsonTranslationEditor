@@ -94,7 +94,9 @@ namespace JsonTranslationEditor
             return nodes;
         }
 
-        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings)
+        private const int MaxDepth = 1;
+
+        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings, int depth = 1)
         {
             var thisNode = new NsTreeItem() { Parent = node, Name = (ns.Split('.').Last()), Namespace = ns , ImagePath = "Assets/Images/ns.png" };
 
@@ -112,6 +114,11 @@ namespace JsonTranslationEditor
                 return;
             }
 
+            if (depth > MaxDepth)
+            {
+                
+            }
+
             var applicableSettings = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).ToList();
 
             foreach (var nextNs in namespaces)
@@ -119,6 +126,8 @@ namespace JsonTranslationEditor
 
                 ProcessNs(thisNode, $"{ns}.{nextNs}", applicableSettings);
             }
+            
+
         }
 
         private static void ProcessNs(TreeViewItem node, string ns, IEnumerable<LanguageSetting> allSettings)

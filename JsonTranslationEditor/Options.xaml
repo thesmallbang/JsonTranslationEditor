@@ -5,12 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JsonTranslationEditor"
         mc:Ignorable="d"
-        Title="Options" Height="130" Width="300">
+        Title="Options" Height="230" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="ContentColumn" Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="40"></RowDefinition>
+        </Grid.RowDefinitions>
         <ScrollViewer x:Name="ContentScroller">
             <StackPanel>
                 <TextBlock>Save Style</TextBlock>
@@ -22,11 +25,15 @@
                         <TextBlock>Namespace-Json</TextBlock>
                     </RadioButton>
                 </UniformGrid>
-                <Separator/>
-                <Button Click="SaveOptions">Save</Button>
-                <Button Click="CloseOptions">Close</Button>
+                <TextBlock>Page Size</TextBlock>
+                <TextBox x:Name="PageSizeText"></TextBox>
             </StackPanel>
         </ScrollViewer>
 
+        <StackPanel Grid.Row="2">
+            <Button Click="SaveOptions">Save</Button>
+            <Button Click="CloseOptions">Close</Button>
+        </StackPanel>
+        
     </Grid>
 </Window>

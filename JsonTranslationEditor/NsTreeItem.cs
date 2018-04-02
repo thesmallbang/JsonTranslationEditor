@@ -16,7 +16,6 @@ namespace JsonTranslationEditor
 
         public List<NsTreeItem> Items { get; set; } = new List<NsTreeItem>();
 
-
         public IEnumerable<LanguageSetting> Settings { get; set; }
 
         public bool HasSiblingBefore

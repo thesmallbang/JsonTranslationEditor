@@ -33,7 +33,7 @@ namespace JsonTranslationEditor
             else
                 NamespaceRadio.IsChecked = true;
 
-
+            PageSizeText.Text = importOptions.PageSize.ToString();
 
         }
 
@@ -47,6 +47,7 @@ namespace JsonTranslationEditor
             else
                 newOptions.SaveStyle = JsonHelper.SaveStyles.Namespaced;
 
+            newOptions.PageSize = Convert.ToInt32(PageSizeText.Text);
             newOptions.DefaultPath = Config.DefaultPath;
             Config = newOptions;
             newOptions.ToDisk();
