@@ -12,7 +12,7 @@ namespace JsonTranslationEditor
     {
 
         // temporary until option is added...how much preloading of the tree is done
-        private const int MaxDepth = 1;
+        private const int MaxDepth = 2;
 
 
 
@@ -82,8 +82,11 @@ namespace JsonTranslationEditor
         }
 
     
-        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings, int depth = 1)
+        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings, int depth = 1, int customDepth = 0)
         {
+            if (customDepth == 0)
+                customDepth = MaxDepth;
+
             var thisNode = new NsTreeItem() { Parent = node, Name = (ns.Split('.').Last()), Namespace = ns , ImagePath = "Assets/Images/ns.png" };
 
             if (node == null)
@@ -105,7 +108,7 @@ namespace JsonTranslationEditor
             var applicableSettings = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).ToList();
 
 
-            if (depth > MaxDepth)
+            if (depth > customDepth)
             {
                 thisNode.HeldSetttings = applicableSettings;
                 return;
@@ -122,6 +125,19 @@ namespace JsonTranslationEditor
             thisNode.IsLoaded = true;
         }
 
+
+        public static void MergeValues(this Dictionary<string,string> list1,Dictionary<string,string> list2)
+        {
+            foreach (var item in list1.Keys)
+            {
+                if (list2.ContainsKey(item))
+                {
+                    list1[item] += list2[item];
+                }
+            }
+      
+            
+        }
 
         public static IEnumerable<TreeViewItem> ToTreeView(this IEnumerable<LanguageSetting> settings)
         {

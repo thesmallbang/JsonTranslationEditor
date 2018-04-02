@@ -17,14 +17,14 @@
         <ScrollViewer x:Name="ContentScroller">
             <StackPanel>
                 <TextBlock>Save Style</TextBlock>
-                <UniformGrid>
+                <StackPanel>
                     <RadioButton x:Name="JsonRadio" GroupName="SaveStyle">
                         <TextBlock>Json</TextBlock>
                     </RadioButton>
                     <RadioButton x:Name="NamespaceRadio" GroupName="SaveStyle">
-                        <TextBlock>Namespace-Json</TextBlock>
+                        <TextBlock>Namespace-Json (Much Slower)</TextBlock>
                     </RadioButton>
-                </UniformGrid>
+                </StackPanel>
                 <TextBlock>Page Size</TextBlock>
                 <TextBox x:Name="PageSizeText"></TextBox>
             </StackPanel>

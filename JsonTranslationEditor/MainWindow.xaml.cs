@@ -1,6 +1,7 @@
 ﻿using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,14 +24,17 @@ namespace JsonTranslationEditor
     {
 
         private List<LanguageSetting> allSettings;
-        private TreeViewItem selectedNode;
+        private NsTreeItem selectedNode;
         private SummaryInfo summaryInfo = new SummaryInfo();
         private PagingController<LanguageGroup> pagingController = new PagingController<LanguageGroup>(30, new List<LanguageGroup>());
+        public List<NsTreeItem> CurrentTreeItems = new List<NsTreeItem>();
+
         private AppOptions appOptions;
         private string currentPath { get; set; }
         public MainWindow(string startupPath)
         {
             InitializeComponent();
+
 
             currentPath = startupPath;
 
@@ -109,18 +113,19 @@ namespace JsonTranslationEditor
 
         private void RefreshTree(string selectNamespace = "")
         {
-            TreeNamespace.Items.Clear();
+
             var nodes = allSettings.ForParse().ToNsTree();
+            CurrentTreeItems.Clear();
             foreach (var node in nodes)
             {
-                this.TreeNamespace.Items.Add(node);
+                CurrentTreeItems.Add(node);
             }
+
+            TreeNamespace.ItemsSource = null;
+            TreeNamespace.ItemsSource = CurrentTreeItems;
+
             itemMenu.IsEnabled = false;
 
-            if (!string.IsNullOrEmpty(selectNamespace))
-            {
-                TreeNamespace.Items.SelectByNamespace(selectNamespace);
-            }
         }
 
         private void UpdateSummaryInfo()
@@ -132,27 +137,26 @@ namespace JsonTranslationEditor
 
         private void TreeNamespace_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            selectedNode = (TreeViewItem)e.NewValue;
+            selectedNode = (NsTreeItem)e.NewValue;
             if (selectedNode == null)
             {
                 itemMenu.IsEnabled = false;
                 return;
             }
-            selectedNode.IsExpanded = true;
+            //  selectedNode.IsExpanded = true;
             itemMenu.IsEnabled = true;
 
 
-            var clickedNamespace = selectedNode.ToNamespaceString();
+            var clickedNamespace = selectedNode.Namespace;
             if (selectedNode.HasItems)
                 clickedNamespace += ".";
-
 
             if (string.IsNullOrWhiteSpace(clickedNamespace))
             {
                 return;
             }
 
-            SearchFilterTextbox.Text = clickedNamespace.Replace("..", ".");
+            SearchFilterTextbox.Text = clickedNamespace;
         }
 
         private void SearchFilterTextbox_TextChanged(object sender, TextChangedEventArgs e)
@@ -175,7 +179,7 @@ namespace JsonTranslationEditor
             foreach (string ns in namespaces)
             {
                 var languageGroup = new LanguageGroup(ns, languages);
-                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == ns));
+                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == ns).ToList());
                 languageGroups.Add(languageGroup);
             }
 
@@ -213,7 +217,16 @@ namespace JsonTranslationEditor
 
         private void Save(object sender, RoutedEventArgs e)
         {
-            new JsonHelper().SaveSettings(appOptions.SaveStyle, currentPath, allSettings.ToLanguageDictionary());
+            switch (appOptions.SaveStyle)
+            {
+                case SaveStyles.Json:
+                    new JsonHelper().SaveJson(currentPath, allSettings.ToLanguageDictionary());
+                    break;
+                case SaveStyles.Namespaced:
+                    new JsonHelper().SaveNsJson(currentPath, CurrentTreeItems.ToList(), allSettings.ToLanguages().ToList());
+                    break;
+            }
+
         }
         private void SaveTo(object sender, RoutedEventArgs e)
         {
@@ -236,10 +249,8 @@ namespace JsonTranslationEditor
         }
         private void NewItem(object sender, RoutedEventArgs e)
         {
-            TreeViewItem node = (TreeViewItem)TreeNamespace.SelectedItem;
-
-
-            var ns = node.ToNamespaceString();
+            NsTreeItem node = (NsTreeItem)TreeNamespace.SelectedItem;
+            var ns = node == null ? string.Empty : node.Namespace;
 
             var dialog = new Prompt("New Translation", "Enter the translation name below.", ns);
             if (dialog.ShowDialog() != true)
@@ -289,13 +300,13 @@ namespace JsonTranslationEditor
         }
         private void RenameItem(object sender, RoutedEventArgs e)
         {
-            TreeViewItem node = (TreeViewItem)TreeNamespace.SelectedItem;
+            var node = (NsTreeItem)TreeNamespace.SelectedItem;
 
             if (node == null)
                 return;
 
-            var ns = node.ToNamespaceString();
-            var originalName = node.Header.ToString();
+            var ns = node.Namespace;
+            var originalName = node.Name;
 
             var dialog = new Prompt("Rename: " + originalName, "Enter the new name below.", originalName);
             if (dialog.ShowDialog() != true)
@@ -308,14 +319,7 @@ namespace JsonTranslationEditor
                 return;
 
 
-            if (!(node.Parent is TreeViewItem))
-            {
-                dialog.ResponseText += ".";
-
-            }
-
-            var newNs = ns.Substring(0, ns.LastIndexOf(node.Header.ToString())) + dialog.ResponseText.Trim();
-
+            var newNs = ns.Substring(0, ns.LastIndexOf(node.Name)) + dialog.ResponseText.Trim();
 
             allSettings.ForParse().ToList().ForEach((item) =>
             {
@@ -327,28 +331,30 @@ namespace JsonTranslationEditor
         }
         private void DeleteItem(object sender, RoutedEventArgs e)
         {
-            TreeViewItem node = (TreeViewItem)TreeNamespace.SelectedItem;
+            NsTreeItem node = (NsTreeItem)TreeNamespace.SelectedItem;
 
             if (node == null)
                 return;
 
-            var ns = node.ToNamespaceString();
+            var ns = node.Namespace;
 
             if (string.IsNullOrWhiteSpace(ns))
                 return;
 
-            if (!(node.Parent is TreeViewItem))
+            if (node.Parent == null)
             {
-                TreeNamespace.Items.Remove(node);
+                CurrentTreeItems.Remove(node);
             }
             else
             {
-                var parent = ((TreeViewItem)node.Parent);
-                parent.Items.Remove(node);
-                parent.IsSelected = true;
+                var nodes = node.Parent.Items as List<NsTreeItem>;
+                nodes.Remove(node);
+             //   node.Parent.IsSelected = true;
             }
 
-            allSettings.NoEmpty().ToList().RemoveAll(o => o.Namespace.StartsWith(ns));
+            allSettings.RemoveAll(o => o.Namespace.StartsWith(ns));
+            
+            RefreshTree();
         }
         private void OpenFolder(object sender, RoutedEventArgs e)
         {

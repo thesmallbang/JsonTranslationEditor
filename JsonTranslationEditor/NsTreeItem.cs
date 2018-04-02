@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ namespace JsonTranslationEditor
         public bool IsLoaded { get; set; }
 
         public string Name { get; set; }
+
         public string Namespace { get; set; }
         public string ImagePath { get; set; }
         private List<NsTreeItem> _storage { get; set; } = new List<NsTreeItem>();
@@ -23,9 +25,16 @@ namespace JsonTranslationEditor
                 if (!IsLoaded)
                     if (HeldSetttings != null)
                     {
-                        var node = this;
-                        Extensions.ProcessNs(node, Namespace, HeldSetttings.ToList());
-                        Console.WriteLine(node.Namespace);
+                        Extensions.ProcessNs(this, Namespace, HeldSetttings.ToList());
+
+                        var copy = _storage.ToList();
+                        _storage.Clear();
+                        foreach (var child in copy)
+                        {
+                            child.Parent = this;
+                            _storage.AddRange(child.Items);
+                        }
+
                         HeldSetttings = null;
                     }
 
@@ -80,52 +89,54 @@ namespace JsonTranslationEditor
 
         }
 
-        public bool HasItems => _storage == null ? false : true;
+        public bool HasItems => _storage == null ? false : _storage.Count >0;
         public bool HasParent => Parent != null;
 
         public NsTreeItem() { }
 
-        public string ToJson(string language, int tabindex = 0)
+
+        public void ToJson(StringBuilder jsonBuilder, string language, int tabindex = 0)
         {
+
+            var tab = new string('\t', tabindex); //tab if it has a parent
             tabindex++;
-            var result = string.Empty;
-            var setting = Settings?.FirstOrDefault(o => o.Language == language);
 
 
+            jsonBuilder.Append(tab);
 
-            result += new string('\t', tabindex); //tab if it has a parent
-
-            result += $"\"{Name}\": "; //write out property name in all scenarios
+            jsonBuilder.Append($"\"{Name}\": ");
 
             if (!Items.Any())
             {
-                result += $"\"{setting.Value}\"";
+                var setting = Settings?.FirstOrDefault(o => o.Language == language);
 
+                jsonBuilder.Append($"\"{setting.Value}\"");
             }
             else
             {
-                result += "{\n";
-                foreach (var item in _storage)
+                jsonBuilder.Append("{\n");
+                foreach (var item in _storage.Distinct())
                 {
-                    result += item.ToJson(language, tabindex) + "\n";
+                    item.ToJson(jsonBuilder, language, tabindex);
                 }
 
-                result += new string('\t', tabindex) + "}";
+                jsonBuilder.Append(tab + "}");
 
 
 
             }
             if (HasSiblingAfter)
-                result += ",";
+                jsonBuilder.Append(",");
 
+            jsonBuilder.Append("\n");
 
-            return result;
         }
 
-        //public override string ToString()
-        //{
-        //    return $"{Name} | {Namespace} | Items: {(_storage == null ? 0 : _storage.Count())}";
-        //}
+
+        public override string ToString()
+        {
+            return $"{Name} | {Namespace} | Items: {(_storage == null ? 0 : _storage.Count())}";
+        }
 
         public List<LanguageSetting> HeldSetttings;
 
