@@ -10,6 +10,12 @@ namespace JsonTranslationEditor
 {
     public static class Extensions
     {
+
+        // temporary until option is added...how much preloading of the tree is done
+        private const int MaxDepth = 1;
+
+
+
         public static IEnumerable<LanguageSetting> ForParse(this IEnumerable<LanguageSetting> settings)
         {
             return settings.Where(o => !string.IsNullOrWhiteSpace(o.Namespace));
@@ -62,18 +68,60 @@ namespace JsonTranslationEditor
             {
                 ProcessNs(root, ns, settings.ToList());
             }
-
+            
             var nodes = new List<NsTreeItem>();
             foreach (NsTreeItem node in root.Items)
             {
                 nodes.Add(node);
                 node.Parent = null;
             }
-            root.Items.Clear();
+            root.Clear();
 
 
             return nodes;
         }
+
+    
+        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings, int depth = 1)
+        {
+            var thisNode = new NsTreeItem() { Parent = node, Name = (ns.Split('.').Last()), Namespace = ns , ImagePath = "Assets/Images/ns.png" };
+
+            if (node == null)
+                node = thisNode;
+            else
+            {
+                node.AddChild(thisNode);
+            }
+
+            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
+
+            if (!namespaces.Any())
+            {
+                thisNode.ImagePath = "Assets/Images/translation.png";
+                thisNode.Settings = allSettings.Where(o => o.Namespace == thisNode.Namespace);
+                return;
+            }
+
+            var applicableSettings = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).ToList();
+
+
+            if (depth > MaxDepth)
+            {
+                thisNode.HeldSetttings = applicableSettings;
+                return;
+            }
+
+
+            depth++;
+            foreach (var nextNs in namespaces)
+            {
+
+                ProcessNs(thisNode, $"{ns}.{nextNs}", applicableSettings, depth);
+            }
+
+            thisNode.IsLoaded = true;
+        }
+
 
         public static IEnumerable<TreeViewItem> ToTreeView(this IEnumerable<LanguageSetting> settings)
         {
@@ -92,42 +140,6 @@ namespace JsonTranslationEditor
             }
             root.Items.Clear();
             return nodes;
-        }
-
-        private const int MaxDepth = 1;
-
-        public static void ProcessNs(NsTreeItem node, string ns, List<LanguageSetting> allSettings, int depth = 1)
-        {
-            var thisNode = new NsTreeItem() { Parent = node, Name = (ns.Split('.').Last()), Namespace = ns , ImagePath = "Assets/Images/ns.png" };
-
-            if (node == null)
-                node = thisNode;
-            else
-                node.Items.Add(thisNode);
-
-            var namespaces = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).Select(o => o.Namespace.Substring(ns.Length + 1).Split('.')[0]).Distinct().OrderBy(o => o).ToList();
-
-            if (!namespaces.Any())
-            {
-                thisNode.ImagePath = "Assets/Images/translation.png";
-                thisNode.Settings = allSettings.Where(o => o.Namespace == thisNode.Namespace);
-                return;
-            }
-
-            if (depth > MaxDepth)
-            {
-                
-            }
-
-            var applicableSettings = allSettings.Where(o => o.Namespace.StartsWith(ns + ".")).ToList();
-
-            foreach (var nextNs in namespaces)
-            {
-
-                ProcessNs(thisNode, $"{ns}.{nextNs}", applicableSettings);
-            }
-            
-
         }
 
         private static void ProcessNs(TreeViewItem node, string ns, IEnumerable<LanguageSetting> allSettings)

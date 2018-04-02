@@ -9,12 +9,30 @@ namespace JsonTranslationEditor
     public class NsTreeItem
     {
         public NsTreeItem Parent { get; set; }
+        public bool IsLoaded { get; set; }
 
         public string Name { get; set; }
         public string Namespace { get; set; }
         public string ImagePath { get; set; }
+        private List<NsTreeItem> _storage { get; set; } = new List<NsTreeItem>();
 
-        public List<NsTreeItem> Items { get; set; } = new List<NsTreeItem>();
+        public IEnumerable<NsTreeItem> Items
+        {
+            get
+            {
+                if (!IsLoaded)
+                    if (HeldSetttings != null)
+                    {
+                        var node = this;
+                        Extensions.ProcessNs(node, Namespace, HeldSetttings.ToList());
+                        Console.WriteLine(node.Namespace);
+                        HeldSetttings = null;
+                    }
+
+                return _storage;
+            }
+            set { _storage = value.ToList(); }
+        }
 
         public IEnumerable<LanguageSetting> Settings { get; set; }
 
@@ -26,13 +44,13 @@ namespace JsonTranslationEditor
                     return false;
 
 
-                if (Parent.Items.Count() <= 0)
+                if (Parent._storage.Count() <= 0)
                     throw new Exception("Item has a parent set but parent has no items set");
 
-                if (Parent.Items.Count() == 1)
+                if (Parent._storage.Count() == 1)
                     return false;
 
-                var firstChild = Parent.Items.OrderBy(o => o.Namespace).FirstOrDefault();
+                var firstChild = Parent._storage.OrderBy(o => o.Namespace).FirstOrDefault();
                 if (firstChild != this)
                     return true;
 
@@ -47,13 +65,13 @@ namespace JsonTranslationEditor
                 if (Parent == null)
                     return false;
 
-                if (Parent.Items.Count() == 1)
+                if (Parent._storage.Count() == 1)
                     return false;
 
-                if (Parent.Items.Count() <= 0)
+                if (Parent._storage.Count() <= 0)
                     throw new Exception("Item has a parent set but parent has no items set");
 
-                var lastChild = Parent.Items.OrderByDescending(o => o.Namespace).FirstOrDefault();
+                var lastChild = Parent._storage.OrderByDescending(o => o.Namespace).FirstOrDefault();
                 if (lastChild != this)
                     return true;
 
@@ -62,20 +80,20 @@ namespace JsonTranslationEditor
 
         }
 
-        public bool HasItems => Items.Count() > 0;
+        public bool HasItems => _storage == null ? false : true;
         public bool HasParent => Parent != null;
 
         public NsTreeItem() { }
 
-        public string ToJson(string language,int  tabindex = 0)
+        public string ToJson(string language, int tabindex = 0)
         {
             tabindex++;
             var result = string.Empty;
             var setting = Settings?.FirstOrDefault(o => o.Language == language);
 
-            
 
-            result += new string('\t',tabindex); //tab if it has a parent
+
+            result += new string('\t', tabindex); //tab if it has a parent
 
             result += $"\"{Name}\": "; //write out property name in all scenarios
 
@@ -87,26 +105,37 @@ namespace JsonTranslationEditor
             else
             {
                 result += "{\n";
-                foreach (var item in Items)
+                foreach (var item in _storage)
                 {
                     result += item.ToJson(language, tabindex) + "\n";
                 }
 
                 result += new string('\t', tabindex) + "}";
 
-           
+
 
             }
             if (HasSiblingAfter)
                 result += ",";
 
-      
+
             return result;
         }
 
-        public override string ToString()
+        //public override string ToString()
+        //{
+        //    return $"{Name} | {Namespace} | Items: {(_storage == null ? 0 : _storage.Count())}";
+        //}
+
+        public List<LanguageSetting> HeldSetttings;
+
+        public void AddChild(NsTreeItem child)
         {
-            return $"{Name} | {Namespace} | Items: {Items.Count()}";
+            _storage.Add(child);
+        }
+        public void Clear()
+        {
+            _storage.Clear();
         }
 
     }
