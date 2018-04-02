@@ -61,11 +61,17 @@ namespace JsonTranslationEditor
                 foreach (var item in Items.ToList())
                 {
                     item.ToJson(node,language);
+                    if (!node.Any())
+                        parent.Remove(Name);
                 }
             } else
             {
                 if (Settings != null && Settings.Any())
-                    parent.Add(Name, Settings.FirstOrDefault(o=>o.Language == language).Value);
+                {
+                    var setting = Settings.FirstOrDefault(o => o.Language == language);
+                        if (setting!= null && !string.IsNullOrWhiteSpace(setting.Value))
+                            parent.Add(Name, setting.Value);
+                }
             }
         }
 

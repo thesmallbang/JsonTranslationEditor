@@ -31,7 +31,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-             GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+          //   GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
@@ -113,8 +113,15 @@ namespace JsonTranslationEditor
                 {
                     items[i].ToJson(dyn, language);
                 }
+
+                //cleanup empty
+
+
                 var newFilePath = System.IO.Path.Combine(path, language + ".json");
-                var json = JsonConvert.SerializeObject(dyn, Formatting.Indented);
+                var json = JsonConvert.SerializeObject(dyn, Formatting.Indented, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                });
                 System.IO.File.WriteAllText(newFilePath,json);
             }
 
