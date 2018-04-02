@@ -31,7 +31,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-         //    GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+             GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
@@ -62,7 +62,7 @@ namespace JsonTranslationEditor
                     for (int n = 0; n < 5; n++)
                     {
 
-                        for (int s = 0; s < 20; s++)
+                        for (int s = 0; s < 200; s++)
                         {
                             settings.Add(new LanguageSetting() { Language = language, Namespace = $"test.{i}.{n}.{s}", Value = "generatedval" });
                         }
@@ -105,35 +105,19 @@ namespace JsonTranslationEditor
         public void SaveNsJson(string path, List<NsTreeItem> items, List<string> languages)
         {
 
-
-            //var languages = items.Select(o=>o.)
-
-            Dictionary<string, StringBuilder> dictionary = new Dictionary<string, StringBuilder>();
-
             foreach (var language in languages)
             {
-                dictionary.Add(language, new StringBuilder());
-            }
+                var dyn = new Dictionary<string, dynamic>();
 
-
-            foreach (var language in languages)
-            {
                 for (int i = 0; i < items.Count; i++)
                 {
-                    items[i].ToJson(dictionary[language],language);
-
-                    if (i != items.Count - 1)
-                        dictionary[language].Append(",\n");
+                    items[i].ToJson(dyn, language);
                 }
+                var newFilePath = System.IO.Path.Combine(path, language + ".json");
+                var json = JsonConvert.SerializeObject(dyn, Formatting.Indented);
+                System.IO.File.WriteAllText(newFilePath,json);
             }
 
-
-
-            foreach (var language in dictionary)
-            {
-                var newFilePath = System.IO.Path.Combine(path, language.Key + ".json");
-                System.IO.File.WriteAllText(newFilePath, "{\n" + language.Value + "\n}");
-            }
         }
 
 

@@ -1,7 +1,9 @@
-﻿using Ookii.Dialogs.Wpf;
+﻿using Newtonsoft.Json;
+using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -395,6 +397,7 @@ namespace JsonTranslationEditor
                 return;
             pagingController.PreviousPage();
             PagedUpdates();
+
         }
 
         private void PagedUpdates()
