@@ -34,6 +34,7 @@ namespace JsonTranslationEditor
                 NamespaceRadio.IsChecked = true;
 
             PageSizeText.Text = importOptions.PageSize.ToString();
+            TruncateSizeText.Text = importOptions.TruncateResultsOver.ToString();
 
         }
 
@@ -48,6 +49,8 @@ namespace JsonTranslationEditor
                 newOptions.SaveStyle = SaveStyles.Namespaced;
 
             newOptions.PageSize = Convert.ToInt32(PageSizeText.Text);
+            newOptions.TruncateResultsOver = Convert.ToInt32(TruncateSizeText.Text);
+
             newOptions.DefaultPath = Config.DefaultPath;
             Config = newOptions;
             newOptions.ToDisk();

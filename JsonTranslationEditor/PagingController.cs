@@ -14,7 +14,7 @@ namespace JsonTranslationEditor
         public int Page { get; private set; }
         public int PageSize { get; private set; }
         public int Pages { get; private set; }
-
+        public bool IsPartial { get; private set; }
         public bool HasPages => Pages > 1;
         public bool HasNextPage => Pages > Page;
         public bool HasPreviousPage => Page > 1;
@@ -24,10 +24,12 @@ namespace JsonTranslationEditor
             {
                 if (Data == null)
                     return "No Results";
-                if (!HasPages)
+                if (!HasPages && !IsPartial)
                     return "Showing All " + Data.Count();
 
-                return $"Showing Page {Page} of {Pages} || {((Page-1) * PageSize)}-{Clamp(((Page-1) * PageSize) + PageSize,Data.Count())} of {Data.Count()}";
+                var pagingMsg = $"Showing Page {Page} of {Pages} || {((Page - 1) * PageSize)}-{Clamp(((Page - 1) * PageSize) + PageSize, Data.Count())} of {Data.Count()}";
+                                
+                return pagingMsg; ;
             }
         }
 
@@ -92,8 +94,9 @@ namespace JsonTranslationEditor
             MoveFirst();
 
         }
-        public void SwapData(IEnumerable<T> data)
+        public void SwapData(IEnumerable<T> data, bool isPartial =false)
         {
+            IsPartial = isPartial;
             Data = data;
             UpdatePageSize(PageSize);
         }

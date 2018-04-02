@@ -31,7 +31,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-          //   GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+           // GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
@@ -61,10 +61,13 @@ namespace JsonTranslationEditor
                 {
                     for (int n = 0; n < 5; n++)
                     {
-
-                        for (int s = 0; s < 200; s++)
+                        for (int x = 0; x < 5; x++)
                         {
-                            settings.Add(new LanguageSetting() { Language = language, Namespace = $"test.{i}.{n}.{s}", Value = "generatedval" });
+
+                            for (int s = 0; s < 200; s++)
+                            {
+                                settings.Add(new LanguageSetting() { Language = language, Namespace = $"test.{i}.{n}.{x}.{s}", Value = "generatedval" });
+                            }
                         }
                     }
                 }

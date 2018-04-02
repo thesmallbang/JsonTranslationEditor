@@ -55,7 +55,7 @@
                 <HierarchicalDataTemplate ItemsSource="{Binding Path=Items}" x:Key="ChildTemplate" >
                     <TextBlock Text="{Binding Path=Name}" />
                 </HierarchicalDataTemplate>
-                
+
                 <HierarchicalDataTemplate x:Key="NameTemplate" ItemsSource="{Binding Path=Items}" ItemTemplate="{StaticResource ChildTemplate}">
                     <TextBlock Text="{Binding Path=Name}" FontWeight="Normal" />
                 </HierarchicalDataTemplate>
@@ -146,7 +146,15 @@
 
 
         </ScrollViewer>
-        <TextBlock Grid.Column="2" Grid.Row="3" x:Name="pagingMessage"></TextBlock>
 
+        <Grid Grid.Column="2" Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Button Visibility="Hidden" Grid.Column="0" x:Name="partialPagingButton" Click="ShowAll">Load All</Button>
+            <TextBlock Grid.Column="1"  x:Name="pagingMessage"></TextBlock>
+        </Grid>
+      
     </Grid>
 </Window>

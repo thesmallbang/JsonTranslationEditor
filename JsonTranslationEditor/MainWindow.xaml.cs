@@ -161,36 +161,59 @@ namespace JsonTranslationEditor
             SearchFilterTextbox.Text = clickedNamespace;
         }
 
-        private void SearchFilterTextbox_TextChanged(object sender, TextChangedEventArgs e)
+        private void Search(string ns, bool alwaysPaging = false)
         {
 
-            var matchedSettings = allSettings.ForParse().ToList();
-            if (SearchFilterTextbox.Text.EndsWith("."))
+            var isPartial = false;
+            var matchedSettings = allSettings.ForParse();
+
+
+
+            if (ns.EndsWith("."))
             {
-                matchedSettings = matchedSettings.Where(o => o.Namespace.StartsWith(SearchFilterTextbox.Text)).ToList();
+                var settings =  matchedSettings.Where(o => o.Namespace.StartsWith(ns)).ToList();
+                if (!alwaysPaging && (settings.Count()/3 > appOptions.TruncateResultsOver))
+                {
+                    isPartial = true;
+                    matchedSettings = settings.Take(appOptions.TruncateResultsOver);
+                }
+                else
+                    matchedSettings = settings.ToList();
             }
             else
             {
-                matchedSettings = matchedSettings.Where(o => o.Namespace == SearchFilterTextbox.Text).ToList();
+                matchedSettings = matchedSettings.Where(o => o.Namespace == ns).ToList();
             }
-
+         
             var namespaces = matchedSettings.ToNamespaces().ToList();
             var languages = allSettings.ToLanguages().ToList();
 
+                                  
             var languageGroups = new List<LanguageGroup>();
-            foreach (string ns in namespaces)
+            foreach (string n in namespaces)
             {
-                var languageGroup = new LanguageGroup(ns, languages);
-                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == ns).ToList());
+                var languageGroup = new LanguageGroup(n, languages);
+                languageGroup.LoadSettings(matchedSettings.Where(o => o.Namespace == n).ToList());
                 languageGroups.Add(languageGroup);
             }
 
-            pagingController.SwapData(languageGroups);
+            pagingController.SwapData(languageGroups, isPartial);
             languageGroupContainer.ItemsSource = pagingController.PageData;
             pagingMessage.Text = pagingController.PageMessage;
+            partialPagingButton.Visibility = isPartial ? Visibility.Visible : Visibility.Hidden;
             ContentScroller.ScrollToTop();
 
+        }
+        
+        private void ShowAll(object sender, RoutedEventArgs e)
+        {
+            Search(SearchFilterTextbox.Text,true);
+        }
 
+
+        private void SearchFilterTextbox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Search(SearchFilterTextbox.Text);
         }
 
         private void AddMissingTranslations()

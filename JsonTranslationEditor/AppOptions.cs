@@ -14,6 +14,7 @@ namespace JsonTranslationEditor
         public SaveStyles SaveStyle { get; set; }
         public string DefaultPath { get; set; }
         public int PageSize { get; set; }
+        public int TruncateResultsOver { get; set; }
 
         static string path = System.IO.Path.Combine(Environment.GetFolderPath(
                Environment.SpecialFolder.MyDoc‌​uments), "JsonTranslationEditor");
@@ -26,14 +27,17 @@ namespace JsonTranslationEditor
                 var loaded = File.ReadAllText(Path.Combine(path, "settings.json"));
                 var options = JsonConvert.DeserializeObject<AppOptions>(loaded);
 
-                if (options.PageSize == 0)
-                    options.PageSize = 50;
+                if (options.PageSize <= 0)
+                    options.PageSize = 100;
+
+                if (options.TruncateResultsOver <= 0)
+                    options.TruncateResultsOver = 2000;
 
                 return options;
 
             }
 
-            return new AppOptions() { SaveStyle = SaveStyles.Json, PageSize = 50 };
+            return new AppOptions() { SaveStyle = SaveStyles.Json, PageSize = 100, TruncateResultsOver = 2000 };
 
         }
         public void ToDisk()

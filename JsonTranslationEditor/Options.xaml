@@ -27,6 +27,8 @@
                 </StackPanel>
                 <TextBlock>Page Size</TextBlock>
                 <TextBox x:Name="PageSizeText"></TextBox>
+                <TextBlock>Truncate Paging After</TextBlock>
+                <TextBox x:Name="TruncateSizeText"></TextBox>
             </StackPanel>
         </ScrollViewer>
 
