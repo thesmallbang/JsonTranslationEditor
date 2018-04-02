@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,13 +10,38 @@ namespace JsonTranslationEditor
     public class NsTreeItem
     {
         public NsTreeItem Parent { get; set; }
+        public bool IsLoaded { get; set; }
 
         public string Name { get; set; }
+
         public string Namespace { get; set; }
         public string ImagePath { get; set; }
+        private List<NsTreeItem> _storage { get; set; } = new List<NsTreeItem>();
 
-        public List<NsTreeItem> Items { get; set; } = new List<NsTreeItem>();
+        public IEnumerable<NsTreeItem> Items
+        {
+            get
+            {
+                if (!IsLoaded)
+                    if (HeldSetttings != null)
+                    {
+                        Extensions.ProcessNs(this, Namespace, HeldSetttings.ToList());
 
+                        var copy = _storage.ToList();
+                        _storage.Clear();
+                        foreach (var child in copy)
+                        {
+                            child.Parent = this;
+                            _storage.AddRange(child.Items);
+                        }
+
+                        HeldSetttings = null;
+                    }
+
+                return _storage;
+            }
+            set { _storage = value.ToList(); }
+        }
 
         public IEnumerable<LanguageSetting> Settings { get; set; }
 
@@ -27,13 +53,13 @@ namespace JsonTranslationEditor
                     return false;
 
 
-                if (Parent.Items.Count() <= 0)
+                if (Parent._storage.Count() <= 0)
                     throw new Exception("Item has a parent set but parent has no items set");
 
-                if (Parent.Items.Count() == 1)
+                if (Parent._storage.Count() == 1)
                     return false;
 
-                var firstChild = Parent.Items.OrderBy(o => o.Namespace).FirstOrDefault();
+                var firstChild = Parent._storage.OrderBy(o => o.Namespace).FirstOrDefault();
                 if (firstChild != this)
                     return true;
 
@@ -48,13 +74,13 @@ namespace JsonTranslationEditor
                 if (Parent == null)
                     return false;
 
-                if (Parent.Items.Count() == 1)
+                if (Parent._storage.Count() == 1)
                     return false;
 
-                if (Parent.Items.Count() <= 0)
+                if (Parent._storage.Count() <= 0)
                     throw new Exception("Item has a parent set but parent has no items set");
 
-                var lastChild = Parent.Items.OrderByDescending(o => o.Namespace).FirstOrDefault();
+                var lastChild = Parent._storage.OrderByDescending(o => o.Namespace).FirstOrDefault();
                 if (lastChild != this)
                     return true;
 
@@ -63,51 +89,64 @@ namespace JsonTranslationEditor
 
         }
 
-        public bool HasItems => Items.Count() > 0;
+        public bool HasItems => _storage == null ? false : _storage.Count >0;
         public bool HasParent => Parent != null;
 
         public NsTreeItem() { }
 
-        public string ToJson(string language,int  tabindex = 0)
+
+        public void ToJson(StringBuilder jsonBuilder, string language, int tabindex = 0)
         {
+
+            var tab = new string('\t', tabindex); //tab if it has a parent
             tabindex++;
-            var result = string.Empty;
-            var setting = Settings?.FirstOrDefault(o => o.Language == language);
 
-            
 
-            result += new string('\t',tabindex); //tab if it has a parent
+            jsonBuilder.Append(tab);
 
-            result += $"\"{Name}\": "; //write out property name in all scenarios
+            jsonBuilder.Append($"\"{Name}\": ");
 
             if (!Items.Any())
             {
-                result += $"\"{setting.Value}\"";
+                var setting = Settings?.FirstOrDefault(o => o.Language == language);
 
+                jsonBuilder.Append($"\"{setting.Value}\"");
             }
             else
             {
-                result += "{\n";
-                foreach (var item in Items)
+                jsonBuilder.Append("{\n");
+                foreach (var item in _storage.Distinct())
                 {
-                    result += item.ToJson(language, tabindex) + "\n";
+                    item.ToJson(jsonBuilder, language, tabindex);
                 }
 
-                result += new string('\t', tabindex) + "}";
+                jsonBuilder.Append(tab + "}");
 
-           
+
 
             }
             if (HasSiblingAfter)
-                result += ",";
+                jsonBuilder.Append(",");
 
-      
-            return result;
+            jsonBuilder.Append("\n");
+
         }
+
 
         public override string ToString()
         {
-            return $"{Name} | {Namespace} | Items: {Items.Count()}";
+            return $"{Name} | {Namespace} | Items: {(_storage == null ? 0 : _storage.Count())}";
+        }
+
+        public List<LanguageSetting> HeldSetttings;
+
+        public void AddChild(NsTreeItem child)
+        {
+            _storage.Add(child);
+        }
+        public void Clear()
+        {
+            _storage.Clear();
         }
 
     }

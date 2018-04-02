@@ -28,12 +28,12 @@ namespace JsonTranslationEditor
             InitializeComponent();
 
 
-            if (Config.SaveStyle == JsonHelper.SaveStyles.Json)
+            if (Config.SaveStyle == SaveStyles.Json)
                 JsonRadio.IsChecked = true;
             else
                 NamespaceRadio.IsChecked = true;
 
-
+            PageSizeText.Text = importOptions.PageSize.ToString();
 
         }
 
@@ -42,11 +42,12 @@ namespace JsonTranslationEditor
             var newOptions = new AppOptions();
             if (JsonRadio.IsChecked.GetValueOrDefault())
             {
-                newOptions.SaveStyle = JsonHelper.SaveStyles.Json;
+                newOptions.SaveStyle = SaveStyles.Json;
             }
             else
-                newOptions.SaveStyle = JsonHelper.SaveStyles.Namespaced;
+                newOptions.SaveStyle = SaveStyles.Namespaced;
 
+            newOptions.PageSize = Convert.ToInt32(PageSizeText.Text);
             newOptions.DefaultPath = Config.DefaultPath;
             Config = newOptions;
             newOptions.ToDisk();

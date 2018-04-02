@@ -31,7 +31,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-          //    GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+         //    GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 
@@ -57,11 +57,15 @@ namespace JsonTranslationEditor
         {
             foreach (var language in languages)
             {
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 20; i++)
                 {
-                    for (int s = 0; s < 200; s++)
+                    for (int n = 0; n < 5; n++)
                     {
-                        settings.Add(new LanguageSetting() { Language = language, Namespace = "test." + i + "." + s, Value = "generatedval" });
+
+                        for (int s = 0; s < 20; s++)
+                        {
+                            settings.Add(new LanguageSetting() { Language = language, Namespace = $"test.{i}.{n}.{s}", Value = "generatedval" });
+                        }
                     }
                 }
             }
@@ -97,67 +101,68 @@ namespace JsonTranslationEditor
             return newPath;
         }
 
-        public void SaveSettings(SaveStyles style, string path, Dictionary<string, IEnumerable<LanguageSetting>> languageSettings)
+
+        public void SaveNsJson(string path, List<NsTreeItem> items, List<string> languages)
         {
-            switch (style)
+
+
+            //var languages = items.Select(o=>o.)
+
+            Dictionary<string, StringBuilder> dictionary = new Dictionary<string, StringBuilder>();
+
+            foreach (var language in languages)
             {
-                case SaveStyles.Json:
-                    {
-                        foreach (var languageSetting in languageSettings)
-                        {
-                            var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
-                            var contentBuilder = new StringBuilder("{\n");
-                            var counter = 0;
-                            foreach (var setting in languageSetting.Value.NoEmpty().OrderBy(o => o.Namespace))
-                            {
-                                counter++;
-                                contentBuilder.AppendLine((counter == 1 ? "" : ",") + "\t\"" + setting.Namespace + "\" : \"" + setting.Value + "\"");
-                            }
+                dictionary.Add(language, new StringBuilder());
+            }
 
-                            contentBuilder.AppendLine("}");
-                            System.IO.File.WriteAllText(newFilePath, contentBuilder.ToString());
-                        }
-                    }
-                    break;
 
-                case SaveStyles.Namespaced:
-                    {
+            foreach (var language in languages)
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    items[i].ToJson(dictionary[language],language);
 
-                        foreach (var languageSetting in languageSettings)
-                        {
-                            var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
-                            var contentBuilder = new StringBuilder("{\n");
+                    if (i != items.Count - 1)
+                        dictionary[language].Append(",\n");
+                }
+            }
 
-                            var settings = languageSetting.Value.NoEmpty().OrderBy(o => o.Namespace).ToList();
-                            var namespaces = settings.ToNamespaces().ToList();
 
-                            var nodes = settings.ToNsTree().ToList();
-                            for (int i = 0; i < nodes.Count; i++)
-                            {
-                                contentBuilder.Append(nodes[i].ToJson(languageSetting.Key,0));
-                                if (i != (nodes.Count - 1))
-                                    contentBuilder.Append(",\n");
-                            }
 
-                            contentBuilder.AppendLine("\n}");
-                            System.IO.File.WriteAllText(newFilePath, contentBuilder.ToString());
-                        }
-                    }
-                    break;
-
-                default:
-                    throw new NotImplementedException("Save Style");
+            foreach (var language in dictionary)
+            {
+                var newFilePath = System.IO.Path.Combine(path, language.Key + ".json");
+                System.IO.File.WriteAllText(newFilePath, "{\n" + language.Value + "\n}");
             }
         }
 
 
-      
-
-           public enum SaveStyles
+        public void SaveJson(string path, Dictionary<string, IEnumerable<LanguageSetting>> languageSettings)
         {
-            Json,
-            Namespaced,
+
+            foreach (var languageSetting in languageSettings)
+            {
+                var newFilePath = System.IO.Path.Combine(path, languageSetting.Key + ".json");
+                var contentBuilder = new StringBuilder("{\n");
+                var counter = 0;
+                foreach (var setting in languageSetting.Value.NoEmpty().OrderBy(o => o.Namespace))
+                {
+                    counter++;
+                    contentBuilder.AppendLine((counter == 1 ? "" : ",") + "\t\"" + setting.Namespace + "\" : \"" + setting.Value + "\"");
+                }
+
+                contentBuilder.AppendLine("}");
+                System.IO.File.WriteAllText(newFilePath, contentBuilder.ToString());
+            }
         }
     }
 
+
+
+
+    public enum SaveStyles
+    {
+        Json,
+        Namespaced,
+    }
 }

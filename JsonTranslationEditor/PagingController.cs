@@ -39,8 +39,8 @@ namespace JsonTranslationEditor
         }
         public PagingController(int pageSize, IEnumerable<T> data)
         {
-            PageSize = pageSize;
-            Page = 1;
+            UpdatePageSize(pageSize);
+            SwapData(data);
         }
 
 
@@ -77,15 +77,25 @@ namespace JsonTranslationEditor
             UpdatePageData();
         }
 
-        public void SwapData(IEnumerable<T> data)
+        public void UpdatePageSize(int pageSize)
         {
-            Data = data;
+
+            PageSize = pageSize;
+            Page = 1;
+            if (Data == null)
+                Data = new List<T>();
             double pages = (double)Data.Count() / (double)PageSize;
             if (pages > (int)pages)
                 pages++;
 
             Pages = (int)pages;
             MoveFirst();
+
+        }
+        public void SwapData(IEnumerable<T> data)
+        {
+            Data = data;
+            UpdatePageSize(PageSize);
         }
 
 
