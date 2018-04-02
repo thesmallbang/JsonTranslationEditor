@@ -61,10 +61,11 @@ namespace JsonTranslationEditor
                 foreach (var item in Items.ToList())
                 {
                     item.ToJson(node,language);
-                    if (!node.Any())
-                        parent.Remove(Name);
                 }
-            } else
+                if (!node.Any())
+                    parent.Remove(Name);
+            }
+            else
             {
                 if (Settings != null && Settings.Any())
                 {
