@@ -1,12 +1,9 @@
 
 # Binary for testing available in the releases section
 
-## I slapped this together after using the BabelEdit trial and wanted to keep some basic functionality. This is my first time learning WPF so be warned.
+## I slapped this together after using the [BabelEdit](https://www.codeandweb.com/babeledit) trial and wanted to keep some basic functionality. This is my first time learning WPF so it is fairly ugly both code and UI
 
-### For a more fully featured program you may want to look into [BabelEdit](https://www.codeandweb.com/babeledit)
-
-
-### This program has no real error handling or friendly messages but should work fine assuming your translation files are not too large until I add some optimizations.
+### This program has no real error handling or friendly messages but should perform OK even on relatively large files.
 
 ### It can load/save two formats
 ```json
@@ -31,7 +28,7 @@ or
 ```
 
 
-![alt text](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/screenshot1.png "Main Window")
+![screenshot-mainwindow](https://github.com/thesmallbang/JsonTranslationEditor/blob/master/JsonTranslationEditor/Assets/Images/screenshot1.png "Main Window")
 
 ## Hotkeys
 ```
