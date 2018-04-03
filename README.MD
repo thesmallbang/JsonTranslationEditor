@@ -1,7 +1,7 @@
 
 # Binary for testing available in the releases section
 
-## I slapped this together after using the [BabelEdit](https://www.codeandweb.com/babeledit) trial and wanted to keep some basic functionality. This is my first time learning WPF so it is fairly ugly both code and UI
+## I slapped this together after using the [BabelEdit](https://www.codeandweb.com/babeledit) trial and wanted to keep some basic functionality. This is my first time using WPF so it is fairly ugly both code and UI
 
 ### This program has no real error handling or friendly messages but should perform OK even on relatively large files.
 
