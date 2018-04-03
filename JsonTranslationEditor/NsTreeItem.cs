@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonTranslationEditor.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace JsonTranslationEditor
                 if (!IsLoaded)
                     if (HeldSetttings != null)
                     {
-                        Extensions.ProcessNs(this, Namespace, HeldSetttings.ToList());
+                        HeldSetttings.ProcessNs(this, Namespace);
 
                         var copy = _storage.ToList();
                         _storage.Clear();

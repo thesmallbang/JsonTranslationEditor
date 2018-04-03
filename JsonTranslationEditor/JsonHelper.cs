@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonTranslationEditor.Extensions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace JsonTranslationEditor
                     newFiles.AddRange(new LanguageSetting[] { new LanguageSetting() { Language = language } });
                 settings.AddRange(newFiles);
             }
-           // GenerateLargeTestData(settings, settings.ToLanguages().ToList());
+            //GenerateLargeTestData(settings, settings.ToLanguages().ToList());
             return settings;
         }
 

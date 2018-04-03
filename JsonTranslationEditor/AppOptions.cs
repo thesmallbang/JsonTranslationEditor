@@ -15,6 +15,7 @@ namespace JsonTranslationEditor
         public string DefaultPath { get; set; }
         public int PageSize { get; set; }
         public int TruncateResultsOver { get; set; }
+        public int LoadingDepth { get; set; }
 
         static string path = System.IO.Path.Combine(Environment.GetFolderPath(
                Environment.SpecialFolder.MyDoc‌​uments), "JsonTranslationEditor");
@@ -33,11 +34,13 @@ namespace JsonTranslationEditor
                 if (options.TruncateResultsOver <= 0)
                     options.TruncateResultsOver = 2000;
 
-                return options;
+                if (options.LoadingDepth <= 0)
+                    options.LoadingDepth = 1;
 
+                return options;
             }
 
-            return new AppOptions() { SaveStyle = SaveStyles.Json, PageSize = 100, TruncateResultsOver = 2000 };
+            return new AppOptions() { SaveStyle = SaveStyles.Json, PageSize = 100, TruncateResultsOver = 2000, LoadingDepth= 1 };
 
         }
         public void ToDisk()

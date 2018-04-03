@@ -61,7 +61,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppOptions.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="Extensions\LanguageSettingExtensions.cs" />
     <Compile Include="NsTreeItem.cs" />
     <Compile Include="Options.xaml.cs">
       <DependentUpon>Options.xaml</DependentUpon>
