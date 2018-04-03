@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JsonTranslationEditor.Extensions;
+using Newtonsoft.Json;
 using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections.Generic;
@@ -168,14 +169,16 @@ namespace JsonTranslationEditor
             var matchedSettings = allSettings.ForParse();
 
 
-
+            var settingCount = 0;
             if (ns.EndsWith("."))
             {
                 var settings =  matchedSettings.Where(o => o.Namespace.StartsWith(ns)).ToList();
+                
                 if (!alwaysPaging && (settings.Count()/3 > appOptions.TruncateResultsOver))
                 {
                     isPartial = true;
                     matchedSettings = settings.Take(appOptions.TruncateResultsOver);
+                    settingCount = settings.Count;
                 }
                 else
                     matchedSettings = settings.ToList();
@@ -201,6 +204,10 @@ namespace JsonTranslationEditor
             languageGroupContainer.ItemsSource = pagingController.PageData;
             pagingMessage.Text = pagingController.PageMessage;
             partialPagingButton.Visibility = isPartial ? Visibility.Visible : Visibility.Hidden;
+            pagingButtons.Visibility = isPartial ? Visibility.Visible : Visibility.Hidden;
+            if (isPartial)
+                partialPagingButton.Content = "Load " + settingCount/3;
+
             ContentScroller.ScrollToTop();
 
         }
@@ -419,6 +426,22 @@ namespace JsonTranslationEditor
             if (pagingController == null || !pagingController.HasPreviousPage)
                 return;
             pagingController.PreviousPage();
+            PagedUpdates();
+
+        }
+        private void FirstPage(object sender, RoutedEventArgs e)
+        {
+            if (pagingController == null || !pagingController.HasPreviousPage)
+                return;
+            pagingController.MoveFirst();
+            PagedUpdates();
+
+        }
+        private void LastPage(object sender, RoutedEventArgs e)
+        {
+            if (pagingController == null || !pagingController.HasNextPage)
+                return;
+            pagingController.LastPage();
             PagedUpdates();
 
         }

@@ -9,7 +9,7 @@ namespace JsonTranslationEditor
     public class SummaryItem
     {
         public string Language { get; set; }
-        public double Percentage { get { return Math.Round((((Potential - Missing) / Potential) * 100), 2); } }
+        public double Percentage { get { return Math.Round(Math.Floor(((Potential - Missing) / Potential) * 100), 2); } }
         public double Missing { get; set; }
         public DateTime Updated { get; } = DateTime.Now;
         public double Potential { get; set; }
